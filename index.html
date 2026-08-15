@@ -6,11 +6,16 @@
 
   <title>Quadro de Empreendedores</title>
 
+  <meta
+    name="description"
+    content="Encontre produtos e serviços oferecidos por pessoas da nossa comunidade."
+  >
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
   <link
-    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
     rel="stylesheet"
   >
 
@@ -23,216 +28,331 @@
       --card: #FBF7EE;
       --card-edge: #EFE7D3;
       --ink: #1C2B2E;
-      --ink-soft: #4C5E60;
+      --ink-soft: #566769;
       --gold: #D2A24C;
       --gold-deep: #B98531;
       --green: #4C7A5D;
       --brick: #A85B3F;
-      --paper-line: rgba(28, 43, 46, 0.08);
+      --paper-line: rgba(28, 43, 46, 0.09);
+      --white-soft: rgba(251, 247, 238, 0.72);
+      --shadow: 0 18px 44px -22px rgba(0,0,0,.65);
     }
 
     * {
       box-sizing: border-box;
     }
 
-    html,
-    body {
-      margin: 0;
-      padding: 0;
+    html {
+      scroll-behavior: smooth;
     }
 
     body {
+      margin: 0;
+      min-height: 100vh;
+
       background:
-        radial-gradient(circle at 15% 10%, rgba(210, 162, 76, 0.10), transparent 40%),
-        radial-gradient(circle at 85% 0%, rgba(76, 122, 93, 0.12), transparent 45%),
+        radial-gradient(circle at 15% 5%, rgba(210,162,76,.10), transparent 32%),
+        radial-gradient(circle at 90% 0%, rgba(76,122,93,.12), transparent 38%),
         var(--bg);
 
       color: var(--ink);
-      font-family: 'Inter', sans-serif;
-      min-height: 100vh;
-      padding-bottom: 80px;
+      font-family: "Inter", sans-serif;
     }
 
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    /* =========================================================
+       CABEÇALHO
+    ========================================================= */
+
     header {
-      padding: 56px 24px 40px;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 42px 24px 22px;
       text-align: center;
-      position: relative;
     }
 
     .eyebrow {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      letter-spacing: .18em;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      letter-spacing: .19em;
       text-transform: uppercase;
       color: var(--gold);
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
 
     h1 {
-      font-family: 'Fraunces', serif;
+      margin: 0;
+
+      font-family: "Fraunces", serif;
       font-weight: 700;
-      font-size: clamp(34px, 6vw, 58px);
-      color: #FBF7EE;
-      margin: 0 0 12px;
-      letter-spacing: -0.01em;
+      font-size: clamp(37px, 6vw, 63px);
+      letter-spacing: -.025em;
+
+      color: var(--card);
     }
 
-    header p.sub {
-      color: rgba(251, 247, 238, 0.65);
-      max-width: 520px;
-      margin: 0 auto;
-      font-size: 15px;
+    .subtitle {
+      max-width: 650px;
+      margin: 14px auto 0;
+
+      color: rgba(251,247,238,.67);
       line-height: 1.6;
+      font-size: 15px;
     }
 
-    header::after {
-      content: "";
-      display: block;
-      width: 64px;
-      height: 3px;
-      background: var(--gold);
-      margin: 28px auto 0;
-      border-radius: 2px;
+    .header-actions {
+      margin-top: 22px;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
-    #refreshBtn {
+    .outline-btn,
+    .gold-btn {
+      min-height: 40px;
+
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
-      margin-top: 26px;
 
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      letter-spacing: .06em;
+      border-radius: 999px;
+      padding: 9px 16px;
+
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      letter-spacing: .05em;
       text-transform: uppercase;
 
-      color: var(--gold);
-      background: rgba(210, 162, 76, 0.08);
-      border: 1px solid rgba(210, 162, 76, 0.4);
-
-      padding: 9px 16px;
-      border-radius: 999px;
-      cursor: pointer;
-
-      transition: all .15s ease;
+      transition: .18s ease;
     }
 
-    #refreshBtn:hover {
+    .outline-btn {
+      color: var(--gold);
+      background: rgba(210,162,76,.07);
+      border: 1px solid rgba(210,162,76,.4);
+    }
+
+    .outline-btn:hover {
       background: var(--gold);
-      color: #16323E;
+      color: var(--bg-deep);
+    }
+
+    .gold-btn {
+      border: 1px solid var(--gold);
+      background: var(--gold);
+      color: var(--bg-deep);
+      font-weight: 700;
+    }
+
+    .gold-btn:hover {
+      transform: translateY(-1px);
+      background: #E2B55C;
+    }
+
+    .outline-btn:disabled {
+      opacity: .6;
+      cursor: wait;
     }
 
     #refreshBtn svg {
-      transition: transform .5s ease;
+      transition: transform .45s ease;
     }
 
     #refreshBtn.spinning svg {
       transform: rotate(360deg);
     }
 
-    .toolbar {
-      max-width: 880px;
-      margin: -8px auto 0;
+    /* =========================================================
+       PAINEL DE BUSCA
+    ========================================================= */
+
+    .catalog-panel {
+      max-width: 1000px;
+      margin: 18px auto 0;
       padding: 0 24px;
     }
 
     .search-wrap {
       background: var(--card);
       border: 1px solid var(--card-edge);
-      border-radius: 14px;
+      border-radius: 16px;
 
-      padding: 6px 6px 6px 20px;
+      min-height: 65px;
 
       display: flex;
       align-items: center;
       gap: 12px;
 
-      box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.5);
+      padding: 7px 16px 7px 20px;
+
+      box-shadow: var(--shadow);
     }
 
     .search-wrap svg {
-      flex: 0 0 auto;
       color: var(--ink-soft);
+      flex: 0 0 auto;
     }
 
     #searchInput {
-      flex: 1;
+      width: 100%;
+
       border: none;
       outline: none;
       background: transparent;
 
-      font-family: 'Inter', sans-serif;
       font-size: 16px;
-
-      padding: 14px 0;
       color: var(--ink);
+
+      padding: 13px 0;
     }
 
     #searchInput::placeholder {
-      color: #9AA6A6;
+      color: #9BA6A5;
+    }
+
+    .filter-row {
+      margin-top: 16px;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
     }
 
     .chips {
       display: flex;
-      flex-wrap: wrap;
       gap: 8px;
-
-      justify-content: center;
-
-      margin: 18px auto 0;
-      max-width: 880px;
-      padding: 0 24px;
+      flex-wrap: wrap;
+      flex: 1;
     }
 
     .chip {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      letter-spacing: .03em;
-
-      color: rgba(251, 247, 238, 0.85);
-      background: rgba(251, 247, 238, 0.06);
-
-      border: 1px solid rgba(251, 247, 238, 0.16);
-
-      padding: 7px 13px;
       border-radius: 999px;
 
-      cursor: pointer;
+      border: 1px solid rgba(251,247,238,.17);
+      background: rgba(251,247,238,.06);
 
-      transition: all .15s ease;
+      color: rgba(251,247,238,.84);
+
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+
+      padding: 8px 13px;
+
+      transition: .15s ease;
     }
 
     .chip:hover {
       border-color: var(--gold);
-      color: #fff;
     }
 
     .chip.active {
+      color: var(--bg-deep);
       background: var(--gold);
       border-color: var(--gold);
-      color: #1C2B2E;
-      font-weight: 600;
+      font-weight: 700;
+    }
+
+    .sort-wrap {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .sort-wrap label {
+      font-size: 11px;
+      font-family: "JetBrains Mono", monospace;
+      color: rgba(251,247,238,.52);
+    }
+
+    #sortSelect,
+    #mobileCategory {
+      background: rgba(251,247,238,.08);
+      color: var(--card);
+
+      border: 1px solid rgba(251,247,238,.18);
+      border-radius: 999px;
+
+      outline: none;
+
+      padding: 8px 11px;
+
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+    }
+
+    #sortSelect option,
+    #mobileCategory option {
+      background: var(--bg-deep);
+      color: white;
+    }
+
+    #mobileCategoryWrap {
+      display: none;
     }
 
     .status-line {
+      min-height: 21px;
+
+      margin: 18px auto 0;
       text-align: center;
 
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
+      color: rgba(251,247,238,.48);
 
-      color: rgba(251, 247, 238, 0.5);
-
-      margin: 18px 0 0;
-      min-height: 18px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
     }
 
+    .error-message {
+      max-width: 680px;
+      margin: 14px auto 0;
+
+      background: rgba(168,91,63,.15);
+      border: 1px solid rgba(168,91,63,.42);
+
+      color: #F5DDD2;
+
+      padding: 11px 14px;
+
+      border-radius: 10px;
+
+      font-size: 12px;
+      text-align: center;
+
+      display: none;
+    }
+
+    /* =========================================================
+       GRID
+    ========================================================= */
+
     main {
-      max-width: 1080px;
-      margin: 36px auto 0;
-      padding: 0 24px;
+      max-width: 1160px;
+
+      margin: 34px auto 0;
+      padding: 0 24px 70px;
 
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
       gap: 22px;
     }
 
@@ -240,13 +360,13 @@
       background: var(--card);
       border: 1px solid var(--card-edge);
 
-      border-radius: 14px;
-
-      padding: 22px 20px 20px;
+      border-radius: 16px;
 
       position: relative;
 
-      box-shadow: 0 14px 30px -18px rgba(0, 0, 0, 0.55);
+      padding: 21px;
+
+      box-shadow: 0 15px 34px -20px rgba(0,0,0,.65);
 
       transition:
         transform .18s ease,
@@ -255,122 +375,439 @@
 
     .card:hover {
       transform: translateY(-3px);
-
-      box-shadow:
-        0 20px 38px -16px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 23px 44px -20px rgba(0,0,0,.65);
     }
 
-    .stamp {
-      position: absolute;
-      top: -10px;
-      right: 16px;
+    .card-top {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
 
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10.5px;
-      letter-spacing: .06em;
-      text-transform: uppercase;
+    .business-logo {
+      width: 62px;
+      height: 62px;
+
+      flex: 0 0 62px;
+
+      border-radius: 15px;
+
+      background: #EEE8DB;
+      border: 1px solid #E3DAC8;
+
+      object-fit: cover;
+    }
+
+    .business-logo.placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      font-family: "Fraunces", serif;
+      font-size: 24px;
+      font-weight: 700;
+
+      color: var(--gold-deep);
+    }
+
+    .business-heading {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .business-name-line {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+
+    .business-heading h3 {
+      margin: 0;
+
+      font-family: "Fraunces", serif;
       font-weight: 600;
-
-      color: #fff;
-
-      background: var(--green);
-
-      padding: 5px 10px;
-
-      border-radius: 5px;
-
-      transform: rotate(3deg);
-
-      box-shadow:
-        0 4px 10px rgba(0, 0, 0, 0.25);
-    }
-
-    .card:nth-child(3n+1) .stamp {
-      background: var(--brick);
-      transform: rotate(-2deg);
-    }
-
-    .card:nth-child(3n+2) .stamp {
-      background: var(--green);
-      transform: rotate(3deg);
-    }
-
-    .card:nth-child(3n) .stamp {
-      background: var(--gold-deep);
-      transform: rotate(-3deg);
-    }
-
-    .card h3 {
-      font-family: 'Fraunces', serif;
-      font-size: 21px;
-      font-weight: 600;
-
-      margin: 6px 0 14px;
 
       color: var(--ink);
+      font-size: 22px;
+
+      line-height: 1.15;
     }
 
-    .card .row {
+    .verified {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+
+      padding: 3px 7px;
+
+      border-radius: 999px;
+
+      font-family: "JetBrains Mono", monospace;
+      font-size: 9px;
+      text-transform: uppercase;
+
+      color: var(--green);
+      background: rgba(76,122,93,.11);
+      border: 1px solid rgba(76,122,93,.22);
+    }
+
+    .service-name {
+      margin-top: 5px;
+      color: var(--ink-soft);
+      font-size: 12px;
+    }
+
+    .tags {
       display: flex;
-      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 6px;
 
-      gap: 9px;
+      margin-top: 14px;
+    }
 
-      font-size: 13.5px;
+    .tag {
+      padding: 5px 8px;
+      border-radius: 999px;
+
+      background: rgba(210,162,76,.12);
+      border: 1px solid rgba(210,162,76,.23);
+
+      color: #86611F;
+
+      font-family: "JetBrains Mono", monospace;
+      font-size: 9.5px;
+      text-transform: uppercase;
+    }
+
+    .description {
+      margin: 14px 0 0;
 
       color: var(--ink-soft);
-
-      padding: 7px 0;
-
-      border-top:
-        1px dashed var(--paper-line);
+      font-size: 13px;
+      line-height: 1.55;
     }
 
-    .card .row:first-of-type {
-      border-top: none;
-      padding-top: 0;
+    .details {
+      margin-top: 15px;
     }
 
-    .card .row svg {
+    .info-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+
+      border-top: 1px dashed var(--paper-line);
+
+      padding: 9px 0;
+
+      color: var(--ink-soft);
+      font-size: 12.5px;
+
+      line-height: 1.45;
+    }
+
+    .info-row svg {
       flex: 0 0 auto;
       margin-top: 1px;
       color: var(--gold-deep);
     }
 
-    .card .row.phone {
-      font-family: 'JetBrains Mono', monospace;
+    .card-actions {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+
+      margin-top: 15px;
+    }
+
+    .card-btn {
+      min-height: 39px;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+
+      border-radius: 10px;
+
+      font-size: 11px;
+      font-weight: 600;
+
+      transition: .15s ease;
+
+      border: 1px solid #DDD5C6;
+      background: #F7F1E5;
       color: var(--ink);
+    }
+
+    .card-btn:hover {
+      transform: translateY(-1px);
+      border-color: var(--gold);
+    }
+
+    .card-btn.whatsapp {
+      background: rgba(76,122,93,.11);
+      border-color: rgba(76,122,93,.28);
+      color: #365B43;
+    }
+
+    .card-btn.details-btn {
+      background: var(--ink);
+      color: #fff;
+      border-color: var(--ink);
+    }
+
+    .card-btn.full {
+      grid-column: 1 / -1;
     }
 
     .empty {
       grid-column: 1 / -1;
 
+      color: rgba(251,247,238,.65);
       text-align: center;
 
-      padding: 60px 20px;
+      padding: 70px 20px;
 
-      color: rgba(251, 247, 238, 0.6);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+    }
 
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 14px;
+    /* =========================================================
+       SKELETON
+    ========================================================= */
+
+    .skeleton {
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .skeleton-line,
+    .skeleton-logo {
+      background:
+        linear-gradient(
+          90deg,
+          #E9E1D3 20%,
+          #F4EEE4 40%,
+          #E9E1D3 60%
+        );
+
+      background-size: 200% 100%;
+
+      animation: shimmer 1.2s infinite;
+    }
+
+    .skeleton-logo {
+      width: 62px;
+      height: 62px;
+      border-radius: 15px;
+    }
+
+    .skeleton-line {
+      height: 12px;
+      border-radius: 999px;
+      margin-top: 10px;
+    }
+
+    @keyframes shimmer {
+      from {
+        background-position: 200% 0;
+      }
+
+      to {
+        background-position: -200% 0;
+      }
+    }
+
+    /* =========================================================
+       MODAL
+    ========================================================= */
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+
+      z-index: 9999;
+
+      background: rgba(8,22,28,.82);
+      backdrop-filter: blur(8px);
+
+      display: none;
+      align-items: center;
+      justify-content: center;
+
+      padding: 22px;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal {
+      width: min(640px, 100%);
+      max-height: 90vh;
+      overflow-y: auto;
+
+      position: relative;
+
+      background: var(--card);
+      border-radius: 19px;
+      border: 1px solid var(--card-edge);
+
+      padding: 27px;
+
+      box-shadow: 0 30px 80px rgba(0,0,0,.4);
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+
+      width: 37px;
+      height: 37px;
+
+      border: none;
+      border-radius: 50%;
+
+      background: rgba(28,43,46,.08);
+      color: var(--ink);
+
+      font-size: 19px;
+    }
+
+    .modal h2 {
+      margin: 0;
+      padding-right: 42px;
+
+      font-family: "Fraunces", serif;
+      font-size: 30px;
+    }
+
+    .modal-description {
+      margin-top: 13px;
+
+      color: var(--ink-soft);
+      line-height: 1.6;
+    }
+
+    .modal-section {
+      margin-top: 22px;
+    }
+
+    .modal-section-title {
+      margin-bottom: 8px;
+
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+
+      color: var(--gold-deep);
+    }
+
+    .modal-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+
+      margin-top: 20px;
+    }
+
+    .modal-actions a {
+      border-radius: 10px;
+
+      padding: 10px 13px;
+
+      font-size: 12px;
+      font-weight: 600;
+
+      border: 1px solid #DCD3C4;
+      background: #F6EFE3;
+    }
+
+    .modal-actions a.whatsapp {
+      background: rgba(76,122,93,.12);
+      border-color: rgba(76,122,93,.28);
+      color: #365B43;
     }
 
     footer {
       text-align: center;
+      color: rgba(251,247,238,.34);
 
-      margin-top: 60px;
+      padding: 0 20px 38px;
 
-      color: rgba(251, 247, 238, 0.35);
-
-      font-size: 12px;
-
-      font-family: 'JetBrains Mono', monospace;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10px;
     }
 
-    @media (max-width: 520px) {
+    /* =========================================================
+       RESPONSIVO
+    ========================================================= */
+
+    @media (max-width: 720px) {
+      header {
+        padding-top: 34px;
+      }
+
+      .chips {
+        display: none;
+      }
+
+      #mobileCategoryWrap {
+        display: block;
+        flex: 1;
+      }
+
+      #mobileCategory {
+        width: 100%;
+      }
+
+      .filter-row {
+        align-items: stretch;
+      }
+
+      .sort-wrap {
+        flex: 1;
+      }
+
+      #sortSelect {
+        width: 100%;
+      }
+
+      main {
+        grid-template-columns: 1fr;
+      }
+
+      .card-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .card-btn.full {
+        grid-column: auto;
+      }
+    }
+
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 40px;
+      }
+
+      .subtitle {
+        font-size: 14px;
+      }
+
       .search-wrap {
-        flex-wrap: wrap;
-        padding: 14px 16px;
+        min-height: 58px;
+      }
+
+      .business-logo,
+      .skeleton-logo {
+        width: 55px;
+        height: 55px;
+        flex-basis: 55px;
       }
     }
 
@@ -383,22 +820,26 @@
 
 <body>
 
-  <header>
-    <div class="eyebrow">
-      Comunidade &middot; Serviços &middot; Confiança
-    </div>
+<header>
+  <div class="eyebrow">
+    Comunidade · Serviços · Confiança
+  </div>
 
-    <h1>
-      Quadro de Empreendedores
-    </h1>
+  <h1>
+    Quadro de Empreendedores
+  </h1>
 
-    <p class="sub">
-      Uma lista de irmãos e irmãs da igreja que oferecem serviços.
-      Busque por profissão para encontrar quem você precisa.
-    </p>
+  <p class="subtitle">
+    Encontre produtos e serviços oferecidos por pessoas da nossa comunidade.
+    Pesquise, conheça e fortaleça os empreendedores que caminham conosco.
+  </p>
 
-    <button id="refreshBtn" type="button">
-
+  <div class="header-actions">
+    <button
+      id="refreshBtn"
+      class="outline-btn"
+      type="button"
+    >
       <svg
         width="14"
         height="14"
@@ -406,750 +847,2267 @@
         fill="none"
         stroke="currentColor"
         stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
       >
         <path d="M23 4v6h-6"></path>
         <path d="M1 20v-6h6"></path>
-        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"></path>
-        <path d="M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        <path d="M3.5 9a9 9 0 0 1 14.8-3.4L23 10"></path>
+        <path d="M1 14l4.6 4.4A9 9 0 0 0 20.5 15"></path>
       </svg>
 
       Atualizar
     </button>
-  </header>
 
-  <div class="toolbar">
+    <a
+      id="registerBtn"
+      class="gold-btn"
+      href="#"
+      target="_blank"
+      rel="noopener"
+      style="display:none;"
+    >
+      + Cadastrar meu negócio
+    </a>
+  </div>
+</header>
 
-    <div class="search-wrap">
 
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
+<section class="catalog-panel">
+
+  <div class="search-wrap">
+
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+    >
+      <circle cx="11" cy="11" r="7"></circle>
+      <line x1="21" y1="21" x2="16.7" y2="16.7"></line>
+    </svg>
+
+    <input
+      id="searchInput"
+      type="search"
+      autocomplete="off"
+      placeholder="Buscar por nome, profissão, produto ou serviço..."
+    >
+
+  </div>
+
+
+  <div class="filter-row">
+
+    <div
+      class="chips"
+      id="chips"
+    ></div>
+
+
+    <div id="mobileCategoryWrap">
+      <select
+        id="mobileCategory"
+        aria-label="Filtrar por categoria"
       >
-        <circle cx="11" cy="11" r="7"></circle>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-      </svg>
+        <option value="">
+          Todas as categorias
+        </option>
+      </select>
+    </div>
 
-      <input
-        id="searchInput"
-        type="text"
-        placeholder="Buscar por serviço ou nome... ex: advogado, manicure, eletricista"
-      >
+
+    <div class="sort-wrap">
+
+      <label for="sortSelect">
+        Ordenar:
+      </label>
+
+      <select id="sortSelect">
+
+        <option value="az">
+          A–Z
+        </option>
+
+        <option value="za">
+          Z–A
+        </option>
+
+        <option value="category">
+          Categoria
+        </option>
+
+        <option value="recent">
+          Mais recentes
+        </option>
+
+      </select>
 
     </div>
 
   </div>
 
-  <div class="chips" id="chips"></div>
 
-  <div class="status-line" id="statusLine"></div>
-
-  <main id="grid"></main>
-
-  <footer>
-    Quadro de Empreendedores — feito com carinho pela comunidade
-  </footer>
-
-  <script>
-
-    // ============================================================
-    // GOOGLE SHEETS
-    // ============================================================
-
-    const SHEET_CSV_URL =
-  "https://docs.google.com/spreadsheets/d/e/2PACX-1vS1bS5dffDMngpDZTqD7yZpzdsHpCNmh-L9vKBfVd-x6451GihNC4WCFwrIQ54sQoqC-oObH8TzOJXY/pub?gid=0&single=true&output=csv";
+  <div
+    class="status-line"
+    id="statusLine"
+  ></div>
 
 
-    // ============================================================
-    // ELEMENTOS
-    // ============================================================
+  <div
+    class="error-message"
+    id="errorMessage"
+  ></div>
 
-    const grid =
-      document.getElementById("grid");
-
-    const searchInput =
-      document.getElementById("searchInput");
-
-    const chipsEl =
-      document.getElementById("chips");
-
-    const statusLine =
-      document.getElementById("statusLine");
-
-    const refreshBtn =
-      document.getElementById("refreshBtn");
+</section>
 
 
-    // ============================================================
-    // ESTADO
-    // ============================================================
-
-    let empreendedores = [];
-
-    let activeCategory = null;
+<main id="grid"></main>
 
 
-    // ============================================================
-    // UTILITÁRIOS
-    // ============================================================
+<footer>
+  Quadro de Empreendedores — feito com carinho pela comunidade
+</footer>
 
-    function norm(str) {
 
-      return (str || "")
-        .toString()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase()
-        .trim();
+<div
+  class="modal-overlay"
+  id="modalOverlay"
+  aria-hidden="true"
+>
+
+  <div
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+  >
+
+    <button
+      class="close-modal"
+      id="closeModal"
+      aria-label="Fechar"
+    >
+      ×
+    </button>
+
+    <div id="modalContent"></div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+  /* ===========================================================
+     CONFIGURAÇÃO
+  =========================================================== */
+
+  const SHEET_CSV_URL =
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vS1bS5dffDMngpDZTqD7yZpzdsHpCNmh-L9vKBfVd-x6451GihNC4WCFwrIQ54sQoqC-oObH8TzOJXY/pub?gid=0&single=true&output=csv";
+
+
+  /*
+    Depois que você criar o Google Forms,
+    cole o link abaixo.
+
+    Exemplo:
+    const CADASTRO_FORM_URL =
+      "https://forms.gle/xxxxxxxx";
+
+    Enquanto estiver vazio,
+    o botão de cadastro fica oculto.
+  */
+
+  const CADASTRO_FORM_URL = "";
+
+
+  const CACHE_KEY =
+    "batista_miramar_empreendedores_v3";
+
+
+  /* ===========================================================
+     ELEMENTOS
+  =========================================================== */
+
+  const grid =
+    document.getElementById("grid");
+
+  const searchInput =
+    document.getElementById("searchInput");
+
+  const chipsEl =
+    document.getElementById("chips");
+
+  const mobileCategory =
+    document.getElementById("mobileCategory");
+
+  const sortSelect =
+    document.getElementById("sortSelect");
+
+  const statusLine =
+    document.getElementById("statusLine");
+
+  const refreshBtn =
+    document.getElementById("refreshBtn");
+
+  const errorMessage =
+    document.getElementById("errorMessage");
+
+  const registerBtn =
+    document.getElementById("registerBtn");
+
+  const modalOverlay =
+    document.getElementById("modalOverlay");
+
+  const modalContent =
+    document.getElementById("modalContent");
+
+  const closeModal =
+    document.getElementById("closeModal");
+
+
+  /* ===========================================================
+     ESTADO
+  =========================================================== */
+
+  let empreendedores = [];
+
+  let activeCategory = "";
+
+  let lastSuccessfulUpdate = null;
+
+
+  /* ===========================================================
+     FORMULÁRIO
+  =========================================================== */
+
+  if (
+    CADASTRO_FORM_URL &&
+    CADASTRO_FORM_URL.startsWith("http")
+  ) {
+
+    registerBtn.href =
+      CADASTRO_FORM_URL;
+
+    registerBtn.style.display =
+      "inline-flex";
+
+  }
+
+
+  /* ===========================================================
+     UTILITÁRIOS
+  =========================================================== */
+
+  function norm(value) {
+
+    return (value || "")
+      .toString()
+      .normalize("NFD")
+      .replace(
+        /[\u0300-\u036f]/g,
+        ""
+      )
+      .toLowerCase()
+      .trim();
+
+  }
+
+
+  function safeText(value) {
+
+    return (value || "")
+      .toString()
+      .trim();
+
+  }
+
+
+  function normalizePhone(value) {
+
+    let digits =
+      safeText(value)
+        .replace(/\D/g, "");
+
+
+    /*
+      Se o número brasileiro estiver
+      sem código do país,
+      adicionamos 55.
+    */
+
+    if (
+      digits.length >= 10 &&
+      digits.length <= 11
+    ) {
+
+      digits =
+        "55" + digits;
 
     }
 
 
-    function safeText(value) {
+    return digits;
 
-      return (value || "")
-        .toString()
-        .trim();
+  }
+
+
+  function isTruthy(value) {
+
+    const text =
+      norm(value);
+
+
+    return [
+      "sim",
+      "s",
+      "true",
+      "1",
+      "yes"
+    ].includes(
+      text
+    );
+
+  }
+
+
+  function splitCategories(value) {
+
+    return safeText(value)
+      .split(/[,;|]/)
+      .map(
+        item =>
+          item.trim()
+      )
+      .filter(Boolean);
+
+  }
+
+
+  function getInitials(name) {
+
+    const words =
+      safeText(name)
+        .split(/\s+/)
+        .filter(Boolean);
+
+
+    return words
+      .slice(0, 2)
+      .map(
+        word =>
+          word.charAt(0)
+      )
+      .join("")
+      .toUpperCase();
+
+  }
+
+
+  function instagramUrl(value) {
+
+    const text =
+      safeText(value);
+
+
+    if (!text) {
+      return "";
+    }
+
+
+    if (
+      text.startsWith("http://") ||
+      text.startsWith("https://")
+    ) {
+
+      return text;
 
     }
 
 
-    // ============================================================
-    // ÍCONES
-    // ============================================================
+    return (
+      "https://instagram.com/" +
+      text.replace(
+        /^@/,
+        ""
+      )
+    );
 
-    function phoneRowIcon() {
+  }
 
-      return `
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path
-            d="M22 16.92v3a2 2 0 0 1-2.18 2
-            19.79 19.79 0 0 1-8.63-3.07
-            19.5 19.5 0 0 1-6-6
-            19.79 19.79 0 0 1-3.07-8.67
-            A2 2 0 0 1 4.11 2h3
-            a2 2 0 0 1 2 1.72
-            c.127.96.361 1.903.7 2.81
-            a2 2 0 0 1-.45 2.11
-            L8.09 9.91a16 16 0 0 0 6 6
-            l1.27-1.27a2 2 0 0 1 2.11-.45
-            c.907.339 1.85.573 2.81.7
-            A2 2 0 0 1 22 16.92z"
-          >
-          </path>
-        </svg>
-      `;
+
+  function websiteUrl(value) {
+
+    const text =
+      safeText(value);
+
+
+    if (!text) {
+      return "";
+    }
+
+
+    if (
+      text.startsWith("http://") ||
+      text.startsWith("https://")
+    ) {
+
+      return text;
 
     }
 
 
-    function addressRowIcon() {
+    return (
+      "https://" +
+      text
+    );
 
-      return `
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path
-            d="M21 10c0 7-9 13-9 13s-9-6-9-13
-            a9 9 0 0 1 18 0z"
-          >
-          </path>
+  }
 
-          <circle
-            cx="12"
-            cy="10"
-            r="3"
-          >
-          </circle>
-        </svg>
-      `;
+
+  function mapsUrl(item) {
+
+    if (
+      item.mapa &&
+      item.mapa.startsWith("http")
+    ) {
+
+      return item.mapa;
 
     }
 
 
-    // ============================================================
-    // CATEGORIAS
-    // ============================================================
-
-    function renderChips() {
-
-      const categories =
-        [...new Set(
-          empreendedores
-            .map(item => item.servico)
-            .filter(Boolean)
-        )]
-        .sort((a, b) =>
-          a.localeCompare(
-            b,
-            "pt-BR"
-          )
-        );
+    if (!item.endereco) {
+      return "";
+    }
 
 
-      chipsEl.innerHTML = "";
+    return (
+      "https://www.google.com/maps/search/?api=1&query=" +
+      encodeURIComponent(
+        item.endereco
+      )
+    );
+
+  }
 
 
-      const allChip =
-        document.createElement("button");
+  function whatsappUrl(item) {
 
-
-      allChip.className =
-        "chip" +
-        (
-          activeCategory === null
-            ? " active"
-            : ""
-        );
-
-
-      allChip.textContent =
-        "Todos";
-
-
-      allChip.onclick =
-        () => {
-
-          activeCategory = null;
-
-          renderChips();
-
-          renderGrid();
-
-        };
-
-
-      chipsEl.appendChild(
-        allChip
+    const phone =
+      normalizePhone(
+        item.whatsapp ||
+        item.telefone
       );
 
 
-      categories.forEach(
-        category => {
-
-          const chip =
-            document.createElement("button");
+    if (!phone) {
+      return "";
+    }
 
 
-          chip.className =
-            "chip" +
-            (
-              activeCategory === category
-                ? " active"
-                : ""
+    const message =
+      `Olá! Encontrei ${
+        item.nome
+      } no Quadro de Empreendedores da Igreja Batista Miramar e gostaria de mais informações.`;
+
+
+    return (
+      `https://wa.me/${phone}?text=` +
+      encodeURIComponent(
+        message
+      )
+    );
+
+  }
+
+
+  /* ===========================================================
+     CACHE LOCAL
+  =========================================================== */
+
+  function saveCache() {
+
+    try {
+
+      localStorage.setItem(
+        CACHE_KEY,
+        JSON.stringify({
+          timestamp:
+            Date.now(),
+
+          data:
+            empreendedores
+        })
+      );
+
+    }
+
+    catch (error) {
+
+      console.warn(
+        "Não foi possível salvar o cache:",
+        error
+      );
+
+    }
+
+  }
+
+
+  function loadCache() {
+
+    try {
+
+      const stored =
+        localStorage.getItem(
+          CACHE_KEY
+        );
+
+
+      if (!stored) {
+        return false;
+      }
+
+
+      const parsed =
+        JSON.parse(
+          stored
+        );
+
+
+      if (
+        !parsed ||
+        !Array.isArray(
+          parsed.data
+        ) ||
+        parsed.data.length === 0
+      ) {
+
+        return false;
+
+      }
+
+
+      empreendedores =
+        parsed.data;
+
+
+      lastSuccessfulUpdate =
+        parsed.timestamp ||
+        null;
+
+
+      return true;
+
+    }
+
+    catch (error) {
+
+      return false;
+
+    }
+
+  }
+
+
+  /* ===========================================================
+     SKELETON
+  =========================================================== */
+
+  function renderSkeletons() {
+
+    grid.innerHTML =
+      "";
+
+
+    for (
+      let i = 0;
+      i < 6;
+      i++
+    ) {
+
+      const skeleton =
+        document.createElement(
+          "article"
+        );
+
+
+      skeleton.className =
+        "card skeleton";
+
+
+      skeleton.innerHTML =
+        `
+          <div class="card-top">
+
+            <div class="skeleton-logo"></div>
+
+            <div style="flex:1;">
+
+              <div
+                class="skeleton-line"
+                style="width:66%;height:18px;"
+              ></div>
+
+              <div
+                class="skeleton-line"
+                style="width:43%;"
+              ></div>
+
+            </div>
+
+          </div>
+
+          <div
+            class="skeleton-line"
+            style="margin-top:22px;width:92%;"
+          ></div>
+
+          <div
+            class="skeleton-line"
+            style="width:78%;"
+          ></div>
+
+          <div
+            class="skeleton-line"
+            style="margin-top:22px;width:100%;height:38px;"
+          ></div>
+        `;
+
+
+      grid.appendChild(
+        skeleton
+      );
+
+    }
+
+  }
+
+
+  /* ===========================================================
+     PLANILHA
+  =========================================================== */
+
+  function parseRowsFromSheet(rows) {
+
+    return rows
+      .map(
+        (row, index) => {
+
+          function getValue(keys) {
+
+            for (
+              const key of keys
+            ) {
+
+              const column =
+                Object.keys(row)
+                  .find(
+                    current =>
+                      norm(current) ===
+                      norm(key)
+                  );
+
+
+              if (
+                column &&
+                row[column] !==
+                  undefined &&
+                row[column] !==
+                  null
+              ) {
+
+                return safeText(
+                  row[column]
+                );
+
+              }
+
+            }
+
+
+            return "";
+
+          }
+
+
+          const principalService =
+            getValue([
+              "Servico",
+              "Serviço"
+            ]);
+
+
+          let categorias =
+            splitCategories(
+              getValue([
+                "Categorias",
+                "Categoria"
+              ])
             );
 
 
-          chip.textContent =
-            category;
+          if (
+            principalService &&
+            !categorias.some(
+              category =>
+                norm(category) ===
+                norm(principalService)
+            )
+          ) {
+
+            categorias.unshift(
+              principalService
+            );
+
+          }
 
 
-          chip.onclick =
-            () => {
+          return {
 
-              activeCategory =
-                activeCategory === category
-                  ? null
-                  : category;
+            id:
+              index + 1,
+
+            nome:
+              getValue([
+                "Nome"
+              ]),
+
+            servico:
+              principalService,
+
+            categorias:
+              categorias,
+
+            telefone:
+              getValue([
+                "Telefone"
+              ]),
+
+            whatsapp:
+              getValue([
+                "Whatsapp",
+                "WhatsApp"
+              ]),
+
+            endereco:
+              getValue([
+                "Endereco",
+                "Endereço"
+              ]),
+
+            descricao:
+              getValue([
+                "Descricao",
+                "Descrição"
+              ]),
+
+            instagram:
+              getValue([
+                "Instagram"
+              ]),
+
+            site:
+              getValue([
+                "Site",
+                "Website"
+              ]),
+
+            horario:
+              getValue([
+                "Horario",
+                "Horário",
+                "Horario de atendimento",
+                "Horário de atendimento"
+              ]),
+
+            logo:
+              getValue([
+                "Logo",
+                "Imagem",
+                "Foto"
+              ]),
+
+            mapa:
+              getValue([
+                "Mapa",
+                "Google Maps"
+              ]),
+
+            verificado:
+              isTruthy(
+                getValue([
+                  "Verificado"
+                ])
+              ),
+
+            dataCadastro:
+              getValue([
+                "Data",
+                "Data Cadastro",
+                "Data de Cadastro"
+              ])
+
+          };
+
+        }
+      )
+
+      .filter(
+        item =>
+          item.nome
+      );
+
+  }
 
 
-              renderChips();
+  /* ===========================================================
+     FILTROS
+  =========================================================== */
 
-              renderGrid();
+  function allCategories() {
 
-            };
+    const categories =
+      new Map();
 
 
-          chipsEl.appendChild(
-            chip
+    empreendedores
+      .flatMap(
+        item =>
+          item.categorias || []
+      )
+      .forEach(
+        category => {
+
+          const key =
+            norm(category);
+
+
+          if (
+            key &&
+            !categories.has(key)
+          ) {
+
+            categories.set(
+              key,
+              category
+            );
+
+          }
+
+        }
+      );
+
+
+    return [
+      ...categories.values()
+    ].sort(
+      (a, b) =>
+        a.localeCompare(
+          b,
+          "pt-BR"
+        )
+    );
+
+  }
+
+
+  function renderCategories() {
+
+    const categories =
+      allCategories();
+
+
+    chipsEl.innerHTML =
+      "";
+
+
+    mobileCategory.innerHTML =
+      `<option value="">
+        Todas as categorias
+      </option>`;
+
+
+    const all =
+      document.createElement(
+        "button"
+      );
+
+
+    all.className =
+      "chip" +
+      (
+        !activeCategory
+          ? " active"
+          : ""
+      );
+
+
+    all.textContent =
+      "Todos";
+
+
+    all.onclick =
+      () => {
+
+        activeCategory =
+          "";
+
+        mobileCategory.value =
+          "";
+
+        renderCategories();
+
+        renderGrid();
+
+      };
+
+
+    chipsEl.appendChild(
+      all
+    );
+
+
+    categories.forEach(
+      category => {
+
+        const chip =
+          document.createElement(
+            "button"
+          );
+
+
+        chip.className =
+          "chip" +
+          (
+            norm(activeCategory) ===
+            norm(category)
+              ? " active"
+              : ""
+          );
+
+
+        chip.textContent =
+          category;
+
+
+        chip.onclick =
+          () => {
+
+            activeCategory =
+              category;
+
+            mobileCategory.value =
+              category;
+
+            renderCategories();
+
+            renderGrid();
+
+          };
+
+
+        chipsEl.appendChild(
+          chip
+        );
+
+
+        const option =
+          document.createElement(
+            "option"
+          );
+
+
+        option.value =
+          category;
+
+        option.textContent =
+          category;
+
+
+        mobileCategory.appendChild(
+          option
+        );
+
+      }
+    );
+
+
+    mobileCategory.value =
+      activeCategory;
+
+  }
+
+
+  function getFilteredItems() {
+
+    const query =
+      norm(
+        searchInput.value
+      );
+
+
+    let result =
+      empreendedores.filter(
+        item => {
+
+          const searchable =
+            [
+              item.nome,
+              item.servico,
+              item.telefone,
+              item.endereco,
+              item.descricao,
+              item.instagram,
+              ...(item.categorias || [])
+            ]
+            .map(norm)
+            .join(" ");
+
+
+          const queryMatch =
+            !query ||
+            searchable.includes(
+              query
+            );
+
+
+          const categoryMatch =
+            !activeCategory ||
+            (
+              item.categorias || []
+            )
+            .some(
+              category =>
+                norm(category) ===
+                norm(activeCategory)
+            );
+
+
+          return (
+            queryMatch &&
+            categoryMatch
           );
 
         }
       );
 
-    }
 
+    switch (
+      sortSelect.value
+    ) {
 
-    // ============================================================
-    // CARDS
-    // ============================================================
+      case "za":
 
-    function createCard(item) {
-
-      const card =
-        document.createElement("div");
-
-      card.className =
-        "card";
-
-
-      const stamp =
-        document.createElement("div");
-
-      stamp.className =
-        "stamp";
-
-      stamp.textContent =
-        item.servico ||
-        "Serviço";
-
-
-      const title =
-        document.createElement("h3");
-
-      title.textContent =
-        item.nome;
-
-
-      const phone =
-        document.createElement("div");
-
-      phone.className =
-        "row phone";
-
-      phone.innerHTML =
-        phoneRowIcon();
-
-
-      const phoneText =
-        document.createElement("span");
-
-      phoneText.textContent =
-        item.telefone ||
-        "Telefone não informado";
-
-
-      phone.appendChild(
-        phoneText
-      );
-
-
-      const address =
-        document.createElement("div");
-
-      address.className =
-        "row";
-
-      address.innerHTML =
-        addressRowIcon();
-
-
-      const addressText =
-        document.createElement("span");
-
-      addressText.textContent =
-        item.endereco ||
-        "Endereço não informado";
-
-
-      address.appendChild(
-        addressText
-      );
-
-
-      card.appendChild(
-        stamp
-      );
-
-      card.appendChild(
-        title
-      );
-
-      card.appendChild(
-        phone
-      );
-
-      card.appendChild(
-        address
-      );
-
-
-      return card;
-
-    }
-
-
-    // ============================================================
-    // LISTAGEM
-    // ============================================================
-
-    function renderGrid() {
-
-      const query =
-        norm(
-          searchInput.value
+        result.sort(
+          (a, b) =>
+            b.nome.localeCompare(
+              a.nome,
+              "pt-BR"
+            )
         );
 
-
-      const filtered =
-        empreendedores.filter(
-          item => {
-
-            const matchesQuery =
-              !query ||
-              norm(item.nome).includes(query) ||
-              norm(item.servico).includes(query) ||
-              norm(item.telefone).includes(query) ||
-              norm(item.endereco).includes(query);
+        break;
 
 
-            const matchesCategory =
-              !activeCategory ||
-              item.servico === activeCategory;
+      case "category":
+
+        result.sort(
+          (a, b) => {
+
+            const categoryA =
+              a.servico ||
+              a.categorias?.[0] ||
+              "";
+
+            const categoryB =
+              b.servico ||
+              b.categorias?.[0] ||
+              "";
 
 
             return (
-              matchesQuery &&
-              matchesCategory
+              categoryA.localeCompare(
+                categoryB,
+                "pt-BR"
+              ) ||
+              a.nome.localeCompare(
+                b.nome,
+                "pt-BR"
+              )
             );
 
           }
         );
 
+        break;
 
-      grid.innerHTML =
-        "";
 
+      case "recent":
+
+        result.sort(
+          (a, b) => {
+
+            const dateA =
+              Date.parse(
+                a.dataCadastro
+              ) || 0;
+
+            const dateB =
+              Date.parse(
+                b.dataCadastro
+              ) || 0;
+
+
+            if (
+              dateA === dateB
+            ) {
+
+              return (
+                b.id -
+                a.id
+              );
+
+            }
+
+
+            return (
+              dateB -
+              dateA
+            );
+
+          }
+        );
+
+        break;
+
+
+      default:
+
+        result.sort(
+          (a, b) =>
+            a.nome.localeCompare(
+              b.nome,
+              "pt-BR"
+            )
+        );
+
+    }
+
+
+    return result;
+
+  }
+
+
+  /* ===========================================================
+     ÍCONES
+  =========================================================== */
+
+  const phoneIcon =
+    `
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path
+          d="M22 16.9v3a2 2 0 0 1-2.2 2
+          19.8 19.8 0 0 1-8.6-3
+          19.5 19.5 0 0 1-6-6
+          19.8 19.8 0 0 1-3.1-8.7
+          A2 2 0 0 1 4.1 2h3
+          a2 2 0 0 1 2 1.7"
+        ></path>
+      </svg>
+    `;
+
+
+  const mapIcon =
+    `
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path
+          d="M21 10c0 7-9 13-9 13
+          s-9-6-9-13
+          a9 9 0 0 1 18 0z"
+        ></path>
+
+        <circle
+          cx="12"
+          cy="10"
+          r="3"
+        ></circle>
+      </svg>
+    `;
+
+
+  const clockIcon =
+    `
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <circle
+          cx="12"
+          cy="12"
+          r="9"
+        ></circle>
+
+        <path
+          d="M12 7v5l3 2"
+        ></path>
+      </svg>
+    `;
+
+
+  /* ===========================================================
+     CARD
+  =========================================================== */
+
+  function createCard(item) {
+
+    const card =
+      document.createElement(
+        "article"
+      );
+
+
+    card.className =
+      "card";
+
+
+    /*
+      Logotipo
+    */
+
+    let logoHTML =
+      "";
+
+
+    if (
+      item.logo &&
+      item.logo.startsWith("http")
+    ) {
+
+      logoHTML =
+        `
+          <img
+            class="business-logo"
+            src="${item.logo}"
+            alt="Logo de ${item.nome}"
+            loading="lazy"
+            onerror="
+              this.style.display='none';
+              this.nextElementSibling.style.display='flex';
+            "
+          >
+
+          <div
+            class="business-logo placeholder"
+            style="display:none;"
+          >
+            ${getInitials(item.nome)}
+          </div>
+        `;
+
+    }
+
+    else {
+
+      logoHTML =
+        `
+          <div class="business-logo placeholder">
+            ${getInitials(item.nome)}
+          </div>
+        `;
+
+    }
+
+
+    const verified =
+      item.verificado
+        ? `
+            <span
+              class="verified"
+              title="Cadastro verificado pela igreja"
+            >
+              ✓ Verificado
+            </span>
+          `
+        : "";
+
+
+    const tags =
+      (item.categorias || [])
+        .slice(0, 4)
+        .map(
+          category =>
+            `
+              <span class="tag">
+                ${category}
+              </span>
+            `
+        )
+        .join("");
+
+
+    const description =
+      item.descricao
+        ? `
+            <p class="description">
+              ${item.descricao}
+            </p>
+          `
+        : "";
+
+
+    const phone =
+      item.telefone
+        ? `
+            <div class="info-row">
+              ${phoneIcon}
+
+              <span>
+                ${item.telefone}
+              </span>
+            </div>
+          `
+        : "";
+
+
+    const address =
+      item.endereco
+        ? `
+            <div class="info-row">
+              ${mapIcon}
+
+              <span>
+                ${item.endereco}
+              </span>
+            </div>
+          `
+        : "";
+
+
+    const schedule =
+      item.horario
+        ? `
+            <div class="info-row">
+              ${clockIcon}
+
+              <span>
+                ${item.horario}
+              </span>
+            </div>
+          `
+        : "";
+
+
+    const whatsapp =
+      whatsappUrl(item);
+
+
+    const map =
+      mapsUrl(item);
+
+
+    const instagram =
+      instagramUrl(
+        item.instagram
+      );
+
+
+    const website =
+      websiteUrl(
+        item.site
+      );
+
+
+    let buttons =
+      "";
+
+
+    if (whatsapp) {
+
+      buttons +=
+        `
+          <a
+            class="card-btn whatsapp"
+            href="${whatsapp}"
+            target="_blank"
+            rel="noopener"
+          >
+            WhatsApp
+          </a>
+        `;
+
+    }
+
+
+    if (map) {
+
+      buttons +=
+        `
+          <a
+            class="card-btn"
+            href="${map}"
+            target="_blank"
+            rel="noopener"
+          >
+            Localização
+          </a>
+        `;
+
+    }
+
+
+    if (instagram) {
+
+      buttons +=
+        `
+          <a
+            class="card-btn"
+            href="${instagram}"
+            target="_blank"
+            rel="noopener"
+          >
+            Instagram
+          </a>
+        `;
+
+    }
+
+
+    if (website) {
+
+      buttons +=
+        `
+          <a
+            class="card-btn"
+            href="${website}"
+            target="_blank"
+            rel="noopener"
+          >
+            Site
+          </a>
+        `;
+
+    }
+
+
+    buttons +=
+      `
+        <button
+          class="card-btn details-btn ${
+            !whatsapp &&
+            !map &&
+            !instagram &&
+            !website
+              ? "full"
+              : ""
+          }"
+          type="button"
+          data-detail-id="${item.id}"
+        >
+          Ver detalhes
+        </button>
+      `;
+
+
+    card.innerHTML =
+      `
+        <div class="card-top">
+
+          ${logoHTML}
+
+          <div class="business-heading">
+
+            <div class="business-name-line">
+
+              <h3>
+                ${item.nome}
+              </h3>
+
+              ${verified}
+
+            </div>
+
+            <div class="service-name">
+              ${
+                item.servico ||
+                "Empreendedor da comunidade"
+              }
+            </div>
+
+          </div>
+
+        </div>
+
+        ${
+          tags
+            ? `<div class="tags">${tags}</div>`
+            : ""
+        }
+
+        ${description}
+
+        <div class="details">
+          ${phone}
+          ${address}
+          ${schedule}
+        </div>
+
+        <div class="card-actions">
+          ${buttons}
+        </div>
+      `;
+
+
+    card
+      .querySelector(
+        "[data-detail-id]"
+      )
+      .addEventListener(
+        "click",
+        () =>
+          openDetails(
+            item
+          )
+      );
+
+
+    return card;
+
+  }
+
+
+  /* ===========================================================
+     MODAL
+  =========================================================== */
+
+  function openDetails(item) {
+
+    const whatsapp =
+      whatsappUrl(item);
+
+    const map =
+      mapsUrl(item);
+
+    const instagram =
+      instagramUrl(
+        item.instagram
+      );
+
+    const website =
+      websiteUrl(
+        item.site
+      );
+
+
+    let actions =
+      "";
+
+
+    if (whatsapp) {
+
+      actions +=
+        `
+          <a
+            class="whatsapp"
+            href="${whatsapp}"
+            target="_blank"
+            rel="noopener"
+          >
+            Falar no WhatsApp
+          </a>
+        `;
+
+    }
+
+
+    if (instagram) {
+
+      actions +=
+        `
+          <a
+            href="${instagram}"
+            target="_blank"
+            rel="noopener"
+          >
+            Instagram
+          </a>
+        `;
+
+    }
+
+
+    if (website) {
+
+      actions +=
+        `
+          <a
+            href="${website}"
+            target="_blank"
+            rel="noopener"
+          >
+            Site
+          </a>
+        `;
+
+    }
+
+
+    if (map) {
+
+      actions +=
+        `
+          <a
+            href="${map}"
+            target="_blank"
+            rel="noopener"
+          >
+            Ver no mapa
+          </a>
+        `;
+
+    }
+
+
+    modalContent.innerHTML =
+      `
+        <h2>
+          ${item.nome}
+        </h2>
+
+        ${
+          item.verificado
+            ? `
+                <div
+                  class="verified"
+                  style="margin-top:10px;"
+                >
+                  ✓ Cadastro verificado pela igreja
+                </div>
+              `
+            : ""
+        }
+
+        ${
+          item.descricao
+            ? `
+                <p class="modal-description">
+                  ${item.descricao}
+                </p>
+              `
+            : ""
+        }
+
+        ${
+          item.categorias.length
+            ? `
+                <div class="modal-section">
+
+                  <div class="modal-section-title">
+                    Serviços e categorias
+                  </div>
+
+                  <div class="tags">
+
+                    ${
+                      item.categorias
+                        .map(
+                          category =>
+                            `
+                              <span class="tag">
+                                ${category}
+                              </span>
+                            `
+                        )
+                        .join("")
+                    }
+
+                  </div>
+
+                </div>
+              `
+            : ""
+        }
+
+        ${
+          item.telefone ||
+          item.endereco ||
+          item.horario
+            ? `
+                <div class="modal-section">
+
+                  <div class="modal-section-title">
+                    Informações
+                  </div>
+
+                  ${
+                    item.telefone
+                      ? `
+                          <div class="info-row">
+                            ${phoneIcon}
+
+                            <span>
+                              ${item.telefone}
+                            </span>
+                          </div>
+                        `
+                      : ""
+                  }
+
+                  ${
+                    item.endereco
+                      ? `
+                          <div class="info-row">
+                            ${mapIcon}
+
+                            <span>
+                              ${item.endereco}
+                            </span>
+                          </div>
+                        `
+                      : ""
+                  }
+
+                  ${
+                    item.horario
+                      ? `
+                          <div class="info-row">
+                            ${clockIcon}
+
+                            <span>
+                              ${item.horario}
+                            </span>
+                          </div>
+                        `
+                      : ""
+                  }
+
+                </div>
+              `
+            : ""
+        }
+
+        ${
+          actions
+            ? `
+                <div class="modal-actions">
+                  ${actions}
+                </div>
+              `
+            : ""
+        }
+      `;
+
+
+    modalOverlay.classList.add(
+      "open"
+    );
+
+
+    modalOverlay.setAttribute(
+      "aria-hidden",
+      "false"
+    );
+
+
+    document.body.style.overflow =
+      "hidden";
+
+  }
+
+
+  function closeDetails() {
+
+    modalOverlay.classList.remove(
+      "open"
+    );
+
+
+    modalOverlay.setAttribute(
+      "aria-hidden",
+      "true"
+    );
+
+
+    document.body.style.overflow =
+      "";
+
+  }
+
+
+  closeModal.addEventListener(
+    "click",
+    closeDetails
+  );
+
+
+  modalOverlay.addEventListener(
+    "click",
+    event => {
 
       if (
-        filtered.length === 0
+        event.target ===
+        modalOverlay
       ) {
 
-        const empty =
-          document.createElement("div");
-
-
-        empty.className =
-          "empty";
-
-
-        empty.textContent =
-          empreendedores.length === 0
-            ? "Nenhum empreendedor cadastrado."
-            : "Nenhum empreendedor encontrado. Tente buscar outro serviço.";
-
-
-        grid.appendChild(
-          empty
-        );
-
-      } else {
-
-        filtered.forEach(
-          item => {
-
-            grid.appendChild(
-              createCard(item)
-            );
-
-          }
-        );
+        closeDetails();
 
       }
 
+    }
+  );
 
-      statusLine.textContent =
-        `${filtered.length} ${
-          filtered.length === 1
-            ? "empreendedor encontrado"
-            : "empreendedores encontrados"
+
+  document.addEventListener(
+    "keydown",
+    event => {
+
+      if (
+        event.key ===
+        "Escape"
+      ) {
+
+        closeDetails();
+
+      }
+
+    }
+  );
+
+
+  /* ===========================================================
+     RENDERIZAÇÃO
+  =========================================================== */
+
+  function renderGrid() {
+
+    const items =
+      getFilteredItems();
+
+
+    grid.innerHTML =
+      "";
+
+
+    if (
+      items.length === 0
+    ) {
+
+      const empty =
+        document.createElement(
+          "div"
+        );
+
+
+      empty.className =
+        "empty";
+
+
+      empty.textContent =
+        empreendedores.length
+          ? "Nenhum empreendedor encontrado com esses filtros."
+          : "Nenhum empreendedor cadastrado.";
+
+
+      grid.appendChild(
+        empty
+      );
+
+    }
+
+    else {
+
+      items.forEach(
+        item =>
+          grid.appendChild(
+            createCard(
+              item
+            )
+          )
+      );
+
+    }
+
+
+    const term =
+      items.length === 1
+        ? "negócio da nossa comunidade"
+        : "negócios da nossa comunidade";
+
+
+    let updatedText =
+      "";
+
+
+    if (
+      lastSuccessfulUpdate
+    ) {
+
+      const date =
+        new Date(
+          lastSuccessfulUpdate
+        );
+
+
+      updatedText =
+        ` • lista atualizada ${
+          date.toLocaleDateString(
+            "pt-BR"
+          ) ===
+          new Date()
+            .toLocaleDateString(
+              "pt-BR"
+            )
+            ? "hoje"
+            : "em " +
+              date.toLocaleDateString(
+                "pt-BR"
+              )
+        } às ${
+          date.toLocaleTimeString(
+            "pt-BR",
+            {
+              hour:
+                "2-digit",
+
+              minute:
+                "2-digit"
+            }
+          )
         }`;
 
     }
 
 
-    // ============================================================
-    // LEITURA DA PLANILHA
-    // ============================================================
+    statusLine.textContent =
+      `${items.length} ${term}${updatedText}`;
 
-    function parseRowsFromSheet(
-      rows
+  }
+
+
+  /* ===========================================================
+     GOOGLE SHEETS
+  =========================================================== */
+
+  function finishRefreshButton() {
+
+    refreshBtn
+      .classList
+      .remove(
+        "spinning"
+      );
+
+
+    refreshBtn.disabled =
+      false;
+
+  }
+
+
+  function loadFromGoogleSheets(
+    showSkeleton = false
+  ) {
+
+    if (
+      showSkeleton &&
+      empreendedores.length === 0
     ) {
 
-      return rows
-        .map(
-          row => {
-
-            const getValue =
-              keys => {
-
-                for (
-                  const key of keys
-                ) {
-
-                  const column =
-                    Object.keys(row)
-                      .find(
-                        currentColumn =>
-                          norm(currentColumn) ===
-                          norm(key)
-                      );
-
-
-                  if (
-                    column &&
-                    row[column] !== undefined &&
-                    row[column] !== null
-                  ) {
-
-                    return safeText(
-                      row[column]
-                    );
-
-                  }
-
-                }
-
-
-                return "";
-
-              };
-
-
-            return {
-
-              nome:
-                getValue([
-                  "Nome"
-                ]),
-
-              servico:
-                getValue([
-                  "Servico",
-                  "Serviço"
-                ]),
-
-              telefone:
-                getValue([
-                  "Telefone"
-                ]),
-
-              endereco:
-                getValue([
-                  "Endereco",
-                  "Endereço"
-                ])
-
-            };
-
-          }
-        )
-        .filter(
-          item =>
-            item.nome
-        );
+      renderSkeletons();
 
     }
 
 
-    // ============================================================
-    // CARREGAMENTO
-    // ============================================================
-
-    function loadFromGoogleSheets(
-      showLoading = true
-    ) {
-
-      if (
-        showLoading
-      ) {
-
-        statusLine.textContent =
-          "Atualizando lista...";
-
-      }
+    errorMessage.style.display =
+      "none";
 
 
-      const cacheBust =
-        Date.now();
+    refreshBtn
+      .classList
+      .add(
+        "spinning"
+      );
 
 
-      const requestUrl =
-        `${SHEET_CSV_URL}&_=${cacheBust}`;
+    refreshBtn.disabled =
+      true;
 
 
-      Papa.parse(
-        requestUrl,
-        {
-
-          download: true,
-
-          header: true,
-
-          skipEmptyLines: true,
-
-          complete:
-            results => {
-
-              const parsed =
-                parseRowsFromSheet(
-                  results.data
-                );
+    const cacheBust =
+      Date.now();
 
 
-              empreendedores =
-                parsed;
+    const requestUrl =
+      `${SHEET_CSV_URL}&cache=${cacheBust}`;
 
 
-              if (
-                activeCategory &&
-                !empreendedores.some(
-                  item =>
-                    item.servico ===
-                    activeCategory
-                )
-              ) {
+    Papa.parse(
+      requestUrl,
+      {
 
-                activeCategory =
-                  null;
+        download:
+          true,
 
-              }
+        header:
+          true,
 
+        skipEmptyLines:
+          true,
 
-              renderChips();
+        complete:
+          results => {
 
-              renderGrid();
-
-
-              const now =
-                new Date();
-
-
-              statusLine.textContent =
-                `${empreendedores.length} ${
-                  empreendedores.length === 1
-                    ? "empreendedor cadastrado"
-                    : "empreendedores cadastrados"
-                } • atualizado às ${
-                  now.toLocaleTimeString(
-                    "pt-BR",
-                    {
-                      hour: "2-digit",
-                      minute: "2-digit"
-                    }
-                  )
-                }`;
-
-
-              refreshBtn.classList.remove(
-                "spinning"
-              );
-
-              refreshBtn.disabled =
-                false;
-
-            },
-
-
-          error:
-            error => {
-
-              console.error(
-                "Erro ao carregar Google Sheets:",
-                error
+            const parsed =
+              parseRowsFromSheet(
+                results.data
               );
 
 
-              statusLine.textContent =
-                "Não foi possível atualizar a planilha. Tente novamente.";
+            if (
+              !parsed.length
+            ) {
 
-
-              refreshBtn.classList.remove(
-                "spinning"
+              handleSheetError(
+                "A planilha foi carregada, mas não encontramos cadastros válidos."
               );
 
-              refreshBtn.disabled =
-                false;
+              return;
 
             }
 
-        }
-      );
 
-    }
-
-
-    // ============================================================
-    // BUSCA
-    // ============================================================
-
-    searchInput.addEventListener(
-      "input",
-      renderGrid
-    );
+            empreendedores =
+              parsed;
 
 
-    // ============================================================
-    // BOTÃO ATUALIZAR
-    // ============================================================
-
-    refreshBtn.addEventListener(
-      "click",
-      () => {
-
-        refreshBtn.classList.add(
-          "spinning"
-        );
-
-        refreshBtn.disabled =
-          true;
+            lastSuccessfulUpdate =
+              Date.now();
 
 
-        loadFromGoogleSheets(
-          true
-        );
+            saveCache();
+
+
+            /*
+              Se uma categoria removida
+              estava selecionada,
+              volta para todas.
+            */
+
+            const categories =
+              allCategories();
+
+
+            if (
+              activeCategory &&
+              !categories.some(
+                category =>
+                  norm(category) ===
+                  norm(activeCategory)
+              )
+            ) {
+
+              activeCategory =
+                "";
+
+            }
+
+
+            renderCategories();
+
+            renderGrid();
+
+            finishRefreshButton();
+
+          },
+
+        error:
+          error => {
+
+            console.error(
+              error
+            );
+
+
+            handleSheetError(
+              "Não conseguimos atualizar a planilha agora."
+            );
+
+          }
 
       }
     );
 
-
-    // ============================================================
-    // PRIMEIRA LEITURA
-    // ============================================================
-
-    loadFromGoogleSheets(
-      true
-    );
+  }
 
 
-    // ============================================================
-    // ATUALIZA AUTOMATICAMENTE A CADA 2 MINUTOS
-    // ============================================================
+  function handleSheetError(
+    message
+  ) {
 
-    setInterval(
-      () => {
+    const hasCache =
+      empreendedores.length > 0 ||
+      loadCache();
 
-        loadFromGoogleSheets(
-          false
-        );
 
-      },
-      2 * 60 * 1000
-    );
+    if (
+      hasCache
+    ) {
 
-  </script>
+      renderCategories();
+
+      renderGrid();
+
+
+      errorMessage.textContent =
+        `${message} Exibindo a última lista disponível.`;
+
+
+      errorMessage.style.display =
+        "block";
+
+    }
+
+    else {
+
+      grid.innerHTML =
+        `
+          <div class="empty">
+            Não foi possível carregar o catálogo no momento.
+          </div>
+        `;
+
+
+      statusLine.textContent =
+        "";
+
+
+      errorMessage.textContent =
+        `${message} Clique em Atualizar para tentar novamente.`;
+
+
+      errorMessage.style.display =
+        "block";
+
+    }
+
+
+    finishRefreshButton();
+
+  }
+
+
+  /* ===========================================================
+     EVENTOS
+  =========================================================== */
+
+  searchInput.addEventListener(
+    "input",
+    renderGrid
+  );
+
+
+  sortSelect.addEventListener(
+    "change",
+    renderGrid
+  );
+
+
+  mobileCategory.addEventListener(
+    "change",
+    () => {
+
+      activeCategory =
+        mobileCategory.value;
+
+
+      renderCategories();
+
+      renderGrid();
+
+    }
+  );
+
+
+  refreshBtn.addEventListener(
+    "click",
+    () => {
+
+      loadFromGoogleSheets(
+        false
+      );
+
+    }
+  );
+
+
+  /* ===========================================================
+     INICIALIZAÇÃO
+  =========================================================== */
+
+  const cacheLoaded =
+    loadCache();
+
+
+  if (
+    cacheLoaded
+  ) {
+
+    renderCategories();
+
+    renderGrid();
+
+  }
+
+  else {
+
+    renderSkeletons();
+
+  }
+
+
+  loadFromGoogleSheets(
+    !cacheLoaded
+  );
+
+
+  /*
+    Atualização automática:
+    a cada 2 minutos.
+  */
+
+  setInterval(
+    () => {
+
+      loadFromGoogleSheets(
+        false
+      );
+
+    },
+
+    2 * 60 * 1000
+  );
+
+</script>
 
 </body>
 </html>
