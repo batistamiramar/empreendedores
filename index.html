@@ -1,446 +1,1155 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Quadro de Empreendedores</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<style>
-  :root{
-    --bg: #16323E;
-    --bg-deep: #0F262F;
-    --card: #FBF7EE;
-    --card-edge: #EFE7D3;
-    --ink: #1C2B2E;
-    --ink-soft: #4C5E60;
-    --gold: #D2A24C;
-    --gold-deep: #B98531;
-    --green: #4C7A5D;
-    --brick: #A85B3F;
-    --paper-line: rgba(28,43,46,0.08);
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{
-    background:
-      radial-gradient(circle at 15% 10%, rgba(210,162,76,0.10), transparent 40%),
-      radial-gradient(circle at 85% 0%, rgba(76,122,93,0.12), transparent 45%),
-      var(--bg);
-    color:var(--ink);
-    font-family:'Inter', sans-serif;
-    min-height:100vh;
-    padding: 0 0 80px;
-  }
+  <title>Quadro de Empreendedores</title>
 
-  a{color:inherit;}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-  /* ---------- Header ---------- */
-  header{
-    padding: 56px 24px 40px;
-    text-align:center;
-    position:relative;
-  }
-  .eyebrow{
-    font-family:'JetBrains Mono', monospace;
-    font-size:12px;
-    letter-spacing:.18em;
-    text-transform:uppercase;
-    color: var(--gold);
-    margin-bottom:14px;
-  }
-  h1{
-    font-family:'Fraunces', serif;
-    font-weight:700;
-    font-size: clamp(34px, 6vw, 58px);
-    color:#FBF7EE;
-    margin:0 0 12px;
-    letter-spacing:-0.01em;
-  }
-  header p.sub{
-    font-family:'Inter', sans-serif;
-    color: rgba(251,247,238,0.65);
-    max-width:520px;
-    margin: 0 auto;
-    font-size:15px;
-    line-height:1.6;
-  }
-  header::after{
-    content:"";
-    display:block;
-    width:64px;
-    height:3px;
-    background: var(--gold);
-    margin: 28px auto 0;
-    border-radius:2px;
-  }
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet"
+  >
 
-  #refreshBtn{
-    display:inline-flex;
-    align-items:center;
-    gap:8px;
-    margin-top: 26px;
-    font-family:'JetBrains Mono', monospace;
-    font-size:12px;
-    letter-spacing:.06em;
-    text-transform:uppercase;
-    color: var(--gold);
-    background: rgba(210,162,76,0.08);
-    border: 1px solid rgba(210,162,76,0.4);
-    padding: 9px 16px;
-    border-radius: 999px;
-    cursor:pointer;
-    transition: all .15s ease;
-  }
-  #refreshBtn:hover{
-    background: var(--gold);
-    color: #16323E;
-  }
-  #refreshBtn svg{
-    transition: transform .5s ease;
-  }
-  #refreshBtn.spinning svg{
-    transform: rotate(360deg);
-  }
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
-  /* ---------- Search & Filters ---------- */
-  .toolbar{
-    max-width: 880px;
-    margin: -8px auto 0;
-    padding: 0 24px;
-  }
-  .search-wrap{
-    background: var(--card);
-    border: 1px solid var(--card-edge);
-    border-radius: 14px;
-    padding: 6px 6px 6px 20px;
-    display:flex;
-    align-items:center;
-    gap:12px;
-    box-shadow: 0 18px 40px -18px rgba(0,0,0,0.5);
-  }
-  .search-wrap svg{ flex:0 0 auto; color: var(--ink-soft); }
-  #searchInput{
-    flex:1;
-    border:none;
-    outline:none;
-    background:transparent;
-    font-family:'Inter', sans-serif;
-    font-size:16px;
-    padding: 14px 0;
-    color: var(--ink);
-  }
-  #searchInput::placeholder{ color:#9AA6A6; }
-  .chips{
-    display:flex;
-    flex-wrap:wrap;
-    gap:8px;
-    justify-content:center;
-    margin: 18px auto 0;
-    max-width: 880px;
-    padding: 0 24px;
-  }
-  .chip{
-    font-family:'JetBrains Mono', monospace;
-    font-size:12px;
-    letter-spacing:.03em;
-    color: rgba(251,247,238,0.85);
-    background: rgba(251,247,238,0.06);
-    border: 1px solid rgba(251,247,238,0.16);
-    padding: 7px 13px;
-    border-radius: 999px;
-    cursor:pointer;
-    transition: all .15s ease;
-  }
-  .chip:hover{ border-color: var(--gold); color:#fff; }
-  .chip.active{
-    background: var(--gold);
-    border-color: var(--gold);
-    color: #1C2B2E;
-    font-weight:600;
-  }
+  <style>
+    :root {
+      --bg: #16323E;
+      --bg-deep: #0F262F;
+      --card: #FBF7EE;
+      --card-edge: #EFE7D3;
+      --ink: #1C2B2E;
+      --ink-soft: #4C5E60;
+      --gold: #D2A24C;
+      --gold-deep: #B98531;
+      --green: #4C7A5D;
+      --brick: #A85B3F;
+      --paper-line: rgba(28, 43, 46, 0.08);
+    }
 
-  .status-line{
-    text-align:center;
-    font-family:'JetBrains Mono', monospace;
-    font-size:12px;
-    color: rgba(251,247,238,0.5);
-    margin: 18px 0 0;
-  }
+    * {
+      box-sizing: border-box;
+    }
 
-  /* ---------- Grid ---------- */
-  main{
-    max-width: 1080px;
-    margin: 36px auto 0;
-    padding: 0 24px;
-    display:grid;
-    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
-    gap: 22px;
-  }
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+    }
 
-  .card{
-    background: var(--card);
-    border: 1px solid var(--card-edge);
-    border-radius: 14px;
-    padding: 22px 20px 20px;
-    position:relative;
-    box-shadow: 0 14px 30px -18px rgba(0,0,0,0.55);
-    transition: transform .18s ease, box-shadow .18s ease;
-  }
-  .card:hover{
-    transform: translateY(-3px);
-    box-shadow: 0 20px 38px -16px rgba(0,0,0,0.6);
-  }
-  .stamp{
-    position:absolute;
-    top: -10px;
-    right: 16px;
-    font-family:'JetBrains Mono', monospace;
-    font-size:10.5px;
-    letter-spacing:.06em;
-    text-transform:uppercase;
-    font-weight:600;
-    color:#fff;
-    background: var(--green);
-    padding: 5px 10px;
-    border-radius: 5px;
-    transform: rotate(3deg);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.25);
-  }
-  .card:nth-child(3n+1) .stamp{ background: var(--brick); transform: rotate(-2deg); }
-  .card:nth-child(3n+2) .stamp{ background: var(--green); transform: rotate(3deg); }
-  .card:nth-child(3n)   .stamp{ background: var(--gold-deep); transform: rotate(-3deg); }
+    body {
+      background:
+        radial-gradient(circle at 15% 10%, rgba(210, 162, 76, 0.10), transparent 40%),
+        radial-gradient(circle at 85% 0%, rgba(76, 122, 93, 0.12), transparent 45%),
+        var(--bg);
 
-  .card h3{
-    font-family:'Fraunces', serif;
-    font-size: 21px;
-    font-weight:600;
-    margin: 6px 0 14px;
-    color: var(--ink);
-  }
-  .card .row{
-    display:flex;
-    align-items:flex-start;
-    gap:9px;
-    font-size:13.5px;
-    color: var(--ink-soft);
-    padding: 7px 0;
-    border-top: 1px dashed var(--paper-line);
-  }
-  .card .row:first-of-type{ border-top:none; padding-top:0; }
-  .card .row svg{ flex:0 0 auto; margin-top:1px; color: var(--gold-deep); }
-  .card .row.phone{ font-family:'JetBrains Mono', monospace; color: var(--ink); }
+      color: var(--ink);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
 
-  .empty{
-    grid-column: 1/-1;
-    text-align:center;
-    padding: 60px 20px;
-    color: rgba(251,247,238,0.6);
-    font-family:'JetBrains Mono', monospace;
-    font-size:14px;
-  }
+    header {
+      padding: 56px 24px 40px;
+      text-align: center;
+      position: relative;
+    }
 
-  footer{
-    text-align:center;
-    margin-top: 60px;
-    color: rgba(251,247,238,0.35);
-    font-size:12px;
-    font-family:'JetBrains Mono', monospace;
-  }
+    .eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 14px;
+    }
 
-  @media (max-width: 520px){
-    .search-wrap{ flex-wrap:wrap; padding: 14px 16px; }
-  }
+    h1 {
+      font-family: 'Fraunces', serif;
+      font-weight: 700;
+      font-size: clamp(34px, 6vw, 58px);
+      color: #FBF7EE;
+      margin: 0 0 12px;
+      letter-spacing: -0.01em;
+    }
 
-  :focus-visible{ outline: 2px solid var(--gold); outline-offset: 2px; }
-</style>
+    header p.sub {
+      color: rgba(251, 247, 238, 0.65);
+      max-width: 520px;
+      margin: 0 auto;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    header::after {
+      content: "";
+      display: block;
+      width: 64px;
+      height: 3px;
+      background: var(--gold);
+      margin: 28px auto 0;
+      border-radius: 2px;
+    }
+
+    #refreshBtn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 26px;
+
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+
+      color: var(--gold);
+      background: rgba(210, 162, 76, 0.08);
+      border: 1px solid rgba(210, 162, 76, 0.4);
+
+      padding: 9px 16px;
+      border-radius: 999px;
+      cursor: pointer;
+
+      transition: all .15s ease;
+    }
+
+    #refreshBtn:hover {
+      background: var(--gold);
+      color: #16323E;
+    }
+
+    #refreshBtn svg {
+      transition: transform .5s ease;
+    }
+
+    #refreshBtn.spinning svg {
+      transform: rotate(360deg);
+    }
+
+    .toolbar {
+      max-width: 880px;
+      margin: -8px auto 0;
+      padding: 0 24px;
+    }
+
+    .search-wrap {
+      background: var(--card);
+      border: 1px solid var(--card-edge);
+      border-radius: 14px;
+
+      padding: 6px 6px 6px 20px;
+
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.5);
+    }
+
+    .search-wrap svg {
+      flex: 0 0 auto;
+      color: var(--ink-soft);
+    }
+
+    #searchInput {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+
+      padding: 14px 0;
+      color: var(--ink);
+    }
+
+    #searchInput::placeholder {
+      color: #9AA6A6;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+
+      justify-content: center;
+
+      margin: 18px auto 0;
+      max-width: 880px;
+      padding: 0 24px;
+    }
+
+    .chip {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      letter-spacing: .03em;
+
+      color: rgba(251, 247, 238, 0.85);
+      background: rgba(251, 247, 238, 0.06);
+
+      border: 1px solid rgba(251, 247, 238, 0.16);
+
+      padding: 7px 13px;
+      border-radius: 999px;
+
+      cursor: pointer;
+
+      transition: all .15s ease;
+    }
+
+    .chip:hover {
+      border-color: var(--gold);
+      color: #fff;
+    }
+
+    .chip.active {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: #1C2B2E;
+      font-weight: 600;
+    }
+
+    .status-line {
+      text-align: center;
+
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+
+      color: rgba(251, 247, 238, 0.5);
+
+      margin: 18px 0 0;
+      min-height: 18px;
+    }
+
+    main {
+      max-width: 1080px;
+      margin: 36px auto 0;
+      padding: 0 24px;
+
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      gap: 22px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--card-edge);
+
+      border-radius: 14px;
+
+      padding: 22px 20px 20px;
+
+      position: relative;
+
+      box-shadow: 0 14px 30px -18px rgba(0, 0, 0, 0.55);
+
+      transition:
+        transform .18s ease,
+        box-shadow .18s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+
+      box-shadow:
+        0 20px 38px -16px rgba(0, 0, 0, 0.6);
+    }
+
+    .stamp {
+      position: absolute;
+      top: -10px;
+      right: 16px;
+
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      font-weight: 600;
+
+      color: #fff;
+
+      background: var(--green);
+
+      padding: 5px 10px;
+
+      border-radius: 5px;
+
+      transform: rotate(3deg);
+
+      box-shadow:
+        0 4px 10px rgba(0, 0, 0, 0.25);
+    }
+
+    .card:nth-child(3n+1) .stamp {
+      background: var(--brick);
+      transform: rotate(-2deg);
+    }
+
+    .card:nth-child(3n+2) .stamp {
+      background: var(--green);
+      transform: rotate(3deg);
+    }
+
+    .card:nth-child(3n) .stamp {
+      background: var(--gold-deep);
+      transform: rotate(-3deg);
+    }
+
+    .card h3 {
+      font-family: 'Fraunces', serif;
+      font-size: 21px;
+      font-weight: 600;
+
+      margin: 6px 0 14px;
+
+      color: var(--ink);
+    }
+
+    .card .row {
+      display: flex;
+      align-items: flex-start;
+
+      gap: 9px;
+
+      font-size: 13.5px;
+
+      color: var(--ink-soft);
+
+      padding: 7px 0;
+
+      border-top:
+        1px dashed var(--paper-line);
+    }
+
+    .card .row:first-of-type {
+      border-top: none;
+      padding-top: 0;
+    }
+
+    .card .row svg {
+      flex: 0 0 auto;
+      margin-top: 1px;
+      color: var(--gold-deep);
+    }
+
+    .card .row.phone {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--ink);
+    }
+
+    .empty {
+      grid-column: 1 / -1;
+
+      text-align: center;
+
+      padding: 60px 20px;
+
+      color: rgba(251, 247, 238, 0.6);
+
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+    }
+
+    footer {
+      text-align: center;
+
+      margin-top: 60px;
+
+      color: rgba(251, 247, 238, 0.35);
+
+      font-size: 12px;
+
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    @media (max-width: 520px) {
+      .search-wrap {
+        flex-wrap: wrap;
+        padding: 14px 16px;
+      }
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--gold);
+      outline-offset: 2px;
+    }
+  </style>
 </head>
+
 <body>
 
-<header>
-  <div class="eyebrow">Comunidade &middot; Serviços &middot; Confiança</div>
-  <h1>Quadro de Empreendedores</h1>
-  <p class="sub">Uma lista de irmãos e irmãs da igreja que oferecem serviços. Busque por profissão para encontrar quem você precisa.</p>
-  <button id="refreshBtn" type="button">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-    Atualizar
-  </button>
-</header>
+  <header>
+    <div class="eyebrow">
+      Comunidade &middot; Serviços &middot; Confiança
+    </div>
 
-<div class="toolbar">
-  <div class="search-wrap">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <input id="searchInput" type="text" placeholder="Buscar por serviço ou nome... ex: advogado, manicure, eletricista">
+    <h1>
+      Quadro de Empreendedores
+    </h1>
+
+    <p class="sub">
+      Uma lista de irmãos e irmãs da igreja que oferecem serviços.
+      Busque por profissão para encontrar quem você precisa.
+    </p>
+
+    <button id="refreshBtn" type="button">
+
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M23 4v6h-6"></path>
+        <path d="M1 20v-6h6"></path>
+        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"></path>
+        <path d="M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+      </svg>
+
+      Atualizar
+    </button>
+  </header>
+
+  <div class="toolbar">
+
+    <div class="search-wrap">
+
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+      >
+        <circle cx="11" cy="11" r="7"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+
+      <input
+        id="searchInput"
+        type="text"
+        placeholder="Buscar por serviço ou nome... ex: advogado, manicure, eletricista"
+      >
+
+    </div>
+
   </div>
-</div>
 
-<div class="chips" id="chips"></div>
-<div class="status-line" id="statusLine"></div>
+  <div class="chips" id="chips"></div>
 
-<main id="grid"></main>
+  <div class="status-line" id="statusLine"></div>
 
-<footer>Quadro de Empreendedores — feito com carinho pela comunidade</footer>
+  <main id="grid"></main>
 
-<script>
-// ===================================================================
-// CONEXÃO COM O GOOGLE SHEETS
-// ===================================================================
-// 1. Crie uma planilha no Google Sheets com estas colunas na 1ª linha:
-//    Nome | Servico | Telefone | Endereco
-// 2. No Sheets, vá em: Arquivo > Compartilhar > Publicar na web
-// 3. Em "Link", escolha a aba da planilha e selecione o formato "CSV"
-// 4. Clique em "Publicar" e copie o link gerado
-// 5. Cole o link abaixo, no lugar de SHEET_CSV_URL
-//
-// O link tem esse formato:
-// https://docs.google.com/spreadsheets/d/e/SEU_ID/pub?output=csv
-// ===================================================================
-const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS4kkSDLaARuEjQI8y0pmS_nYZOEtDV63AhNndX9A2vVeB-ivwoahfUhP3pjCLJ8cQuuHw7BL7nubbf/pub?gid=0&single=true&output=csv";
+  <footer>
+    Quadro de Empreendedores — feito com carinho pela comunidade
+  </footer>
 
-// Dados de exemplo — usados enquanto o link acima não é configurado,
-// ou como reserva caso a planilha não possa ser carregada.
-let empreendedores = [
-  { nome: "Marcos Vinícius Alves",   servico: "Advogado",         telefone: "(21) 98123-4567", endereco: "Rua das Palmeiras, 120 - Centro" },
-  { nome: "Fernanda Souza Lima",     servico: "Manicure",         telefone: "(21) 99876-1122", endereco: "Rua São João, 45 - Vila Nova" },
-  { nome: "José Carlos Pereira",     servico: "Pedreiro",         telefone: "(21) 97654-3210", endereco: "Av. Brasil, 980 - Jardim das Flores" },
-  { nome: "Antônio Ribeiro da Silva",servico: "Eletricista",      telefone: "(21) 96543-2109", endereco: "Rua dos Ipês, 33 - Boa Vista" },
-  { nome: "Juliana Cardoso Martins", servico: "Cabeleireira",     telefone: "(21) 98456-7890", endereco: "Rua da Alegria, 210 - Centro" },
-  { nome: "Roberto Nascimento Dias", servico: "Contador",         telefone: "(21) 99234-5678", endereco: "Av. das Américas, 1500, sala 302" },
-  { nome: "Camila Ferreira Torres",  servico: "Fotógrafa",        telefone: "(21) 98765-4321", endereco: "Rua Bela Vista, 78 - Jardim Primavera" },
-  { nome: "Lucas Gabriel Oliveira",  servico: "Personal Trainer",  telefone: "(21) 97123-9988", endereco: "Rua do Progresso, 500 - Centro" },
-  { nome: "Patrícia Gomes Rocha",    servico: "Confeiteira",      telefone: "(21) 96789-0123", endereco: "Rua das Acácias, 15 - Vila Esperança" },
-  { nome: "Eduardo Barbosa Costa",   servico: "Encanador",        telefone: "(21) 98321-6547", endereco: "Rua Rio Branco, 640 - Boa Vista" }
-];
+  <script>
 
-const grid = document.getElementById('grid');
-const searchInput = document.getElementById('searchInput');
-const chipsEl = document.getElementById('chips');
-const statusLine = document.getElementById('statusLine');
+    // ============================================================
+    // GOOGLE SHEETS
+    // ============================================================
 
-let activeCategory = null;
+    const SHEET_CSV_URL =
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vS4kkSDLaARuEjQI8y0pmS_nYZOEtDV63AhNndX9A2vVeB-ivwoahfUhP3pjCLJ8cQuuHw7BL7nubbf/pub?gid=0&single=true&output=csv";
 
-function norm(str){
-  return (str || "").toString().normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
-}
 
-function phoneRowIcon(){
-  return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
-}
-function addressRowIcon(){
-  return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';
-}
+    // ============================================================
+    // ELEMENTOS
+    // ============================================================
 
-function renderChips(){
-  const categories = [...new Set(empreendedores.map(e => e.servico))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
-  chipsEl.innerHTML = '';
-  const allChip = document.createElement('button');
-  allChip.className = 'chip' + (activeCategory === null ? ' active' : '');
-  allChip.textContent = 'Todos';
-  allChip.onclick = () => { activeCategory = null; renderChips(); renderGrid(); };
-  chipsEl.appendChild(allChip);
+    const grid =
+      document.getElementById("grid");
 
-  categories.forEach(cat => {
-    const chip = document.createElement('button');
-    chip.className = 'chip' + (activeCategory === cat ? ' active' : '');
-    chip.textContent = cat;
-    chip.onclick = () => { activeCategory = (activeCategory === cat ? null : cat); renderChips(); renderGrid(); };
-    chipsEl.appendChild(chip);
-  });
-}
+    const searchInput =
+      document.getElementById("searchInput");
 
-function renderGrid(){
-  const q = norm(searchInput.value);
-  const filtered = empreendedores.filter(e => {
-    const matchesQuery = !q || norm(e.nome).includes(q) || norm(e.servico).includes(q);
-    const matchesCategory = !activeCategory || e.servico === activeCategory;
-    return matchesQuery && matchesCategory;
-  });
+    const chipsEl =
+      document.getElementById("chips");
 
-  grid.innerHTML = '';
-  if(filtered.length === 0){
-    grid.innerHTML = '<div class="empty">Nenhum empreendedor encontrado. Tente buscar outro serviço.</div>';
-  } else {
-    filtered.forEach(e => {
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = `
-        <div class="stamp">${e.servico}</div>
-        <h3>${e.nome}</h3>
-        <div class="row phone">${phoneRowIcon()} ${e.telefone || 'Telefone não informado'}</div>
-        <div class="row">${addressRowIcon()} ${e.endereco || 'Endereço não informado'}</div>
-      `;
-      grid.appendChild(card);
-    });
-  }
+    const statusLine =
+      document.getElementById("statusLine");
 
-  statusLine.textContent = ${filtered.length} ${filtered.length === 1 ? 'empreendedor encontrado' : 'empreendedores encontrados'};
-}
+    const refreshBtn =
+      document.getElementById("refreshBtn");
 
-searchInput.addEventListener('input', renderGrid);
 
-const refreshBtn = document.getElementById('refreshBtn');
-refreshBtn.addEventListener('click', () => {
-  refreshBtn.classList.add('spinning');
-  window.location.reload();
-});
+    // ============================================================
+    // ESTADO
+    // ============================================================
 
-function parseRowsFromSheet(rows){
-  return rows.map(r => {
-    const get = (keys) => {
-      for(const k of keys){
-        const found = Object.keys(r).find(col => norm(col) === norm(k));
-        if(found && r[found]) return r[found].toString().trim();
-      }
-      return '';
-    };
-    return {
-      nome: get(['Nome', 'nome']),
-      servico: get(['Servico', 'Serviço', 'servico']),
-      telefone: get(['Telefone', 'telefone']),
-      endereco: get(['Endereco', 'Endereço', 'endereco'])
-    };
-  }).filter(e => e.nome);
-}
+    let empreendedores = [];
 
-function loadFromGoogleSheets(){
-  if(!SHEET_CSV_URL || SHEET_CSV_URL.includes('COLE_AQUI')){
-    // Link ainda não configurado: fica com os dados de exemplo.
-    renderChips();
-    renderGrid();
-    return;
-  }
+    let activeCategory = null;
 
-  statusLine.textContent = 'Carregando lista da planilha...';
 
-  Papa.parse(SHEET_CSV_URL, {
-    download: true,
-    header: true,
-    skipEmptyLines: true,
-    complete: (results) => {
-      const parsed = parseRowsFromSheet(results.data);
-      if(parsed.length > 0){
-        empreendedores = parsed;
-      }
-      renderChips();
-      renderGrid();
-    },
-    error: () => {
-      // Se a planilha falhar ao carregar, mantém os dados de exemplo.
-      renderChips();
-      renderGrid();
+    // ============================================================
+    // UTILITÁRIOS
+    // ============================================================
+
+    function norm(str) {
+
+      return (str || "")
+        .toString()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+
     }
-  });
-}
 
-loadFromGoogleSheets();
 
-// Atualiza a lista periodicamente para refletir mudanças na planilha
-// sem precisar recarregar a página (a cada 5 minutos).
-setInterval(loadFromGoogleSheets, 5 * 60 * 1000);
-</script>
+    function safeText(value) {
+
+      return (value || "")
+        .toString()
+        .trim();
+
+    }
+
+
+    // ============================================================
+    // ÍCONES
+    // ============================================================
+
+    function phoneRowIcon() {
+
+      return `
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path
+            d="M22 16.92v3a2 2 0 0 1-2.18 2
+            19.79 19.79 0 0 1-8.63-3.07
+            19.5 19.5 0 0 1-6-6
+            19.79 19.79 0 0 1-3.07-8.67
+            A2 2 0 0 1 4.11 2h3
+            a2 2 0 0 1 2 1.72
+            c.127.96.361 1.903.7 2.81
+            a2 2 0 0 1-.45 2.11
+            L8.09 9.91a16 16 0 0 0 6 6
+            l1.27-1.27a2 2 0 0 1 2.11-.45
+            c.907.339 1.85.573 2.81.7
+            A2 2 0 0 1 22 16.92z"
+          >
+          </path>
+        </svg>
+      `;
+
+    }
+
+
+    function addressRowIcon() {
+
+      return `
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path
+            d="M21 10c0 7-9 13-9 13s-9-6-9-13
+            a9 9 0 0 1 18 0z"
+          >
+          </path>
+
+          <circle
+            cx="12"
+            cy="10"
+            r="3"
+          >
+          </circle>
+        </svg>
+      `;
+
+    }
+
+
+    // ============================================================
+    // CATEGORIAS
+    // ============================================================
+
+    function renderChips() {
+
+      const categories =
+        [...new Set(
+          empreendedores
+            .map(item => item.servico)
+            .filter(Boolean)
+        )]
+        .sort((a, b) =>
+          a.localeCompare(
+            b,
+            "pt-BR"
+          )
+        );
+
+
+      chipsEl.innerHTML = "";
+
+
+      const allChip =
+        document.createElement("button");
+
+
+      allChip.className =
+        "chip" +
+        (
+          activeCategory === null
+            ? " active"
+            : ""
+        );
+
+
+      allChip.textContent =
+        "Todos";
+
+
+      allChip.onclick =
+        () => {
+
+          activeCategory = null;
+
+          renderChips();
+
+          renderGrid();
+
+        };
+
+
+      chipsEl.appendChild(
+        allChip
+      );
+
+
+      categories.forEach(
+        category => {
+
+          const chip =
+            document.createElement("button");
+
+
+          chip.className =
+            "chip" +
+            (
+              activeCategory === category
+                ? " active"
+                : ""
+            );
+
+
+          chip.textContent =
+            category;
+
+
+          chip.onclick =
+            () => {
+
+              activeCategory =
+                activeCategory === category
+                  ? null
+                  : category;
+
+
+              renderChips();
+
+              renderGrid();
+
+            };
+
+
+          chipsEl.appendChild(
+            chip
+          );
+
+        }
+      );
+
+    }
+
+
+    // ============================================================
+    // CARDS
+    // ============================================================
+
+    function createCard(item) {
+
+      const card =
+        document.createElement("div");
+
+      card.className =
+        "card";
+
+
+      const stamp =
+        document.createElement("div");
+
+      stamp.className =
+        "stamp";
+
+      stamp.textContent =
+        item.servico ||
+        "Serviço";
+
+
+      const title =
+        document.createElement("h3");
+
+      title.textContent =
+        item.nome;
+
+
+      const phone =
+        document.createElement("div");
+
+      phone.className =
+        "row phone";
+
+      phone.innerHTML =
+        phoneRowIcon();
+
+
+      const phoneText =
+        document.createElement("span");
+
+      phoneText.textContent =
+        item.telefone ||
+        "Telefone não informado";
+
+
+      phone.appendChild(
+        phoneText
+      );
+
+
+      const address =
+        document.createElement("div");
+
+      address.className =
+        "row";
+
+      address.innerHTML =
+        addressRowIcon();
+
+
+      const addressText =
+        document.createElement("span");
+
+      addressText.textContent =
+        item.endereco ||
+        "Endereço não informado";
+
+
+      address.appendChild(
+        addressText
+      );
+
+
+      card.appendChild(
+        stamp
+      );
+
+      card.appendChild(
+        title
+      );
+
+      card.appendChild(
+        phone
+      );
+
+      card.appendChild(
+        address
+      );
+
+
+      return card;
+
+    }
+
+
+    // ============================================================
+    // LISTAGEM
+    // ============================================================
+
+    function renderGrid() {
+
+      const query =
+        norm(
+          searchInput.value
+        );
+
+
+      const filtered =
+        empreendedores.filter(
+          item => {
+
+            const matchesQuery =
+              !query ||
+              norm(item.nome).includes(query) ||
+              norm(item.servico).includes(query) ||
+              norm(item.telefone).includes(query) ||
+              norm(item.endereco).includes(query);
+
+
+            const matchesCategory =
+              !activeCategory ||
+              item.servico === activeCategory;
+
+
+            return (
+              matchesQuery &&
+              matchesCategory
+            );
+
+          }
+        );
+
+
+      grid.innerHTML =
+        "";
+
+
+      if (
+        filtered.length === 0
+      ) {
+
+        const empty =
+          document.createElement("div");
+
+
+        empty.className =
+          "empty";
+
+
+        empty.textContent =
+          empreendedores.length === 0
+            ? "Nenhum empreendedor cadastrado."
+            : "Nenhum empreendedor encontrado. Tente buscar outro serviço.";
+
+
+        grid.appendChild(
+          empty
+        );
+
+      } else {
+
+        filtered.forEach(
+          item => {
+
+            grid.appendChild(
+              createCard(item)
+            );
+
+          }
+        );
+
+      }
+
+
+      statusLine.textContent =
+        `${filtered.length} ${
+          filtered.length === 1
+            ? "empreendedor encontrado"
+            : "empreendedores encontrados"
+        }`;
+
+    }
+
+
+    // ============================================================
+    // LEITURA DA PLANILHA
+    // ============================================================
+
+    function parseRowsFromSheet(
+      rows
+    ) {
+
+      return rows
+        .map(
+          row => {
+
+            const getValue =
+              keys => {
+
+                for (
+                  const key of keys
+                ) {
+
+                  const column =
+                    Object.keys(row)
+                      .find(
+                        currentColumn =>
+                          norm(currentColumn) ===
+                          norm(key)
+                      );
+
+
+                  if (
+                    column &&
+                    row[column] !== undefined &&
+                    row[column] !== null
+                  ) {
+
+                    return safeText(
+                      row[column]
+                    );
+
+                  }
+
+                }
+
+
+                return "";
+
+              };
+
+
+            return {
+
+              nome:
+                getValue([
+                  "Nome"
+                ]),
+
+              servico:
+                getValue([
+                  "Servico",
+                  "Serviço"
+                ]),
+
+              telefone:
+                getValue([
+                  "Telefone"
+                ]),
+
+              endereco:
+                getValue([
+                  "Endereco",
+                  "Endereço"
+                ])
+
+            };
+
+          }
+        )
+        .filter(
+          item =>
+            item.nome
+        );
+
+    }
+
+
+    // ============================================================
+    // CARREGAMENTO
+    // ============================================================
+
+    function loadFromGoogleSheets(
+      showLoading = true
+    ) {
+
+      if (
+        showLoading
+      ) {
+
+        statusLine.textContent =
+          "Atualizando lista...";
+
+      }
+
+
+      const cacheBust =
+        Date.now();
+
+
+      const requestUrl =
+        `${SHEET_CSV_URL}&_=${cacheBust}`;
+
+
+      Papa.parse(
+        requestUrl,
+        {
+
+          download: true,
+
+          header: true,
+
+          skipEmptyLines: true,
+
+          complete:
+            results => {
+
+              const parsed =
+                parseRowsFromSheet(
+                  results.data
+                );
+
+
+              empreendedores =
+                parsed;
+
+
+              if (
+                activeCategory &&
+                !empreendedores.some(
+                  item =>
+                    item.servico ===
+                    activeCategory
+                )
+              ) {
+
+                activeCategory =
+                  null;
+
+              }
+
+
+              renderChips();
+
+              renderGrid();
+
+
+              const now =
+                new Date();
+
+
+              statusLine.textContent =
+                `${empreendedores.length} ${
+                  empreendedores.length === 1
+                    ? "empreendedor cadastrado"
+                    : "empreendedores cadastrados"
+                } • atualizado às ${
+                  now.toLocaleTimeString(
+                    "pt-BR",
+                    {
+                      hour: "2-digit",
+                      minute: "2-digit"
+                    }
+                  )
+                }`;
+
+
+              refreshBtn.classList.remove(
+                "spinning"
+              );
+
+              refreshBtn.disabled =
+                false;
+
+            },
+
+
+          error:
+            error => {
+
+              console.error(
+                "Erro ao carregar Google Sheets:",
+                error
+              );
+
+
+              statusLine.textContent =
+                "Não foi possível atualizar a planilha. Tente novamente.";
+
+
+              refreshBtn.classList.remove(
+                "spinning"
+              );
+
+              refreshBtn.disabled =
+                false;
+
+            }
+
+        }
+      );
+
+    }
+
+
+    // ============================================================
+    // BUSCA
+    // ============================================================
+
+    searchInput.addEventListener(
+      "input",
+      renderGrid
+    );
+
+
+    // ============================================================
+    // BOTÃO ATUALIZAR
+    // ============================================================
+
+    refreshBtn.addEventListener(
+      "click",
+      () => {
+
+        refreshBtn.classList.add(
+          "spinning"
+        );
+
+        refreshBtn.disabled =
+          true;
+
+
+        loadFromGoogleSheets(
+          true
+        );
+
+      }
+    );
+
+
+    // ============================================================
+    // PRIMEIRA LEITURA
+    // ============================================================
+
+    loadFromGoogleSheets(
+      true
+    );
+
+
+    // ============================================================
+    // ATUALIZA AUTOMATICAMENTE A CADA 2 MINUTOS
+    // ============================================================
+
+    setInterval(
+      () => {
+
+        loadFromGoogleSheets(
+          false
+        );
+
+      },
+      2 * 60 * 1000
+    );
+
+  </script>
 
 </body>
 </html>
