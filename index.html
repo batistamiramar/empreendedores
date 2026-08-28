@@ -913,6 +913,7 @@
 
   const CACHE_KEY = "quadro_empreendedores_miramar_v1";
   const GEOCODE_CACHE_KEY = "quadro_empreendedores_miramar_geocode_v1";
+  const MAP_LOCATIONS_CACHE_KEY = "sogov_emp_map_locations_v1";
   const DISCOUNTS = [10, 15, 20, 25];
   const CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   const PAGE_SIZE = 9;
@@ -950,6 +951,7 @@
   let leafletMap = null;
   let markersLayer = null;
   let geocodeCache = {};
+  let localizacoes = [];
   let mapUpdateToken = 0;
 
   // Relação estável: empresa -> dados -> marcador do Leaflet.
@@ -957,6 +959,7 @@
   const markersById = new Map();
   let mapHasInitializedViewport = false;
   try { geocodeCache = JSON.parse(localStorage.getItem(GEOCODE_CACHE_KEY) || "{}"); } catch (error) { geocodeCache = {}; }
+  localizacoes = loadMapLocations();
 
   // O botão de cadastro usa diretamente o Google Forms.
   // COORDENACAO_WHATSAPP permanece disponível para futuras necessidades.
@@ -1049,6 +1052,163 @@
     const message = `Olá! Encontrei ${item.nome} no Quadro de Empreendedores da Igreja Batista do Miramar e gostaria de saber mais sobre seus serviços.`;
     return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
   }
+
+  /* ===================== LOCALIZAÇÕES PERSISTENTES ===================== */
+
+  function loadMapLocations() {
+    try {
+      const raw = localStorage.getItem(
+        MAP_LOCATIONS_CACHE_KEY
+      );
+
+      if (!raw) {
+        return [];
+      }
+
+      const parsed = JSON.parse(raw);
+
+      if (!Array.isArray(parsed)) {
+        return [];
+      }
+
+      return parsed.filter(item =>
+        item &&
+        safeText(item.id) &&
+        safeText(item.empresa) &&
+        Number.isFinite(Number(item.latitude)) &&
+        Number.isFinite(Number(item.longitude))
+      );
+    } catch (error) {
+      console.warn(
+        "[Mapa] Cache de localizações inválido:",
+        error
+      );
+
+      return [];
+    }
+  }
+
+  function saveMapLocations() {
+    try {
+      localStorage.setItem(
+        MAP_LOCATIONS_CACHE_KEY,
+        JSON.stringify(localizacoes)
+      );
+    } catch (error) {
+      console.warn(
+        "[Mapa] Não foi possível salvar localizações:",
+        error
+      );
+    }
+  }
+
+  function upsertMapLocation(item, coords) {
+    if (!validCoordinates(coords)) {
+      return;
+    }
+
+    const existingIndex = localizacoes.findIndex(
+      location => location.id === item.id
+    );
+
+    const location = {
+      id: item.id,
+      empresa: item.nome,
+      endereco: item.endereco || "",
+      latitude: Number(coords.lat),
+      longitude: Number(coords.lon),
+      fonte: coords.source || "nominatim",
+      atualizadoEm: Date.now()
+    };
+
+    if (existingIndex === -1) {
+      localizacoes.push(location);
+    } else {
+      localizacoes[existingIndex] = {
+        ...localizacoes[existingIndex],
+        ...location
+      };
+    }
+  }
+
+  function removeInactiveMapLocations(activeIds) {
+    localizacoes = localizacoes.filter(
+      location => activeIds.has(location.id)
+    );
+  }
+
+  function getMapLocation(id) {
+    return localizacoes.find(
+      location => location.id === id
+    ) || null;
+  }
+
+  function createMarkerFromLocation(location, item) {
+    const marker = L.marker(
+      [
+        location.latitude,
+        location.longitude
+      ],
+      {
+        title: item.nome,
+        alt: `Localização de ${item.nome}`,
+        keyboard: true
+      }
+    );
+
+    const mapUrl = mapsUrl(item);
+
+    marker
+      .bindPopup(`
+        <div class="map-popup-title">
+          ${escapeHtml(item.nome)}
+        </div>
+
+        <div class="map-popup-service">
+          ${escapeHtml(
+            item.servico || "Empreendedor da comunidade"
+          )}
+        </div>
+
+        <div style="
+          font-size:12px;
+          color:rgba(5,53,85,0.62);
+          line-height:1.45;
+          margin-bottom:8px;
+        ">
+          ${escapeHtml(
+            item.endereco || "Localização cadastrada"
+          )}
+        </div>
+
+        ${
+          mapUrl
+            ? `
+              <a
+                class="map-popup-link"
+                href="${mapUrl}"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Ver rotas &rarr;
+              </a>
+            `
+            : ""
+        }
+      `)
+      .addTo(markersLayer);
+
+    marker.businessId = item.id;
+
+    marker.on("click", () => {
+      highlightMapBusiness(item.id);
+    });
+
+    markersById.set(item.id, marker);
+
+    return marker;
+  }
+
   /* ===================== MAPA (Leaflet + OpenStreetMap) ===================== */
 
   function saveGeocodeCache() {
@@ -1533,37 +1693,93 @@
 
     leafletMap.invalidateSize();
 
-    const withAddress = items.filter(
-      item => safeText(item.endereco) || safeText(item.mapa)
+    const activeItems = items.filter(item =>
+      safeText(item.endereco) || safeText(item.mapa)
     );
+
+    const activeIds = new Set(
+      activeItems.map(item => item.id)
+    );
+
+    // Remove do cache empresas que não existem mais na planilha.
+    removeInactiveMapLocations(activeIds);
+    saveMapLocations();
 
     markersLayer.clearLayers();
     markersById.clear();
-    businessesById.clear();
 
-    if (!withAddress.length) {
-      mapPlaceholder.querySelector("span").textContent =
-        "Nenhuma localização foi cadastrada ainda.";
-      mapPlaceholder.style.display = "flex";
+    // Primeiro desenha imediatamente tudo que já foi geocodificado.
+    let points = [];
+
+    for (const item of activeItems) {
+      const cachedLocation = getMapLocation(item.id);
+
+      if (!cachedLocation) {
+        continue;
+      }
+
+      const marker = createMarkerFromLocation(
+        cachedLocation,
+        item
+      );
+
+      points.push([
+        cachedLocation.latitude,
+        cachedLocation.longitude
+      ]);
+    }
+
+    // Se já temos coordenadas salvas, o mapa não precisa esperar API.
+    if (points.length) {
+      mapPlaceholder.style.display = "none";
+
+      if (!mapHasInitializedViewport) {
+        if (points.length === 1) {
+          leafletMap.setView(points[0], 15);
+        } else {
+          leafletMap.fitBounds(points, {
+            padding: [40, 40],
+            maxZoom: 16
+          });
+        }
+
+        mapHasInitializedViewport = true;
+      }
+    }
+
+    // Agora procura somente empresas que ainda não possuem localização.
+    const pendingItems = activeItems.filter(
+      item => !getMapLocation(item.id)
+    );
+
+    if (!pendingItems.length) {
+      if (!points.length) {
+        mapPlaceholder.querySelector("span").textContent =
+          "Nenhuma localização cadastrada ainda.";
+        mapPlaceholder.style.display = "flex";
+      }
+
+      if (typeof renderMapBusinessList === "function") {
+        renderMapBusinessList(getFilteredItems());
+      }
+
       return;
     }
 
     mapPlaceholder.querySelector("span").textContent =
-      "Localizando os empreendedores...";
-    mapPlaceholder.style.display = "flex";
+      points.length
+        ? "Atualizando novas localizações..."
+        : "Localizando os endereços dos empreendedores...";
 
-    const points = [];
-    let locatedCount = 0;
+    mapPlaceholder.style.display =
+      points.length ? "none" : "flex";
 
-    for (const item of withAddress) {
+    // Geocodifica somente novos/alterados registros.
+    for (const item of pendingItems) {
       if (updateToken !== mapUpdateToken) {
         return;
       }
 
-      businessesById.set(item.id, item);
-
-      // Primeiro tenta latitude/longitude existentes no próprio link
-      // do Google Maps; depois usa a coluna Endereço via Nominatim.
       const coords = await geocodeAddress(
         item.endereco,
         item.mapa
@@ -1577,118 +1793,56 @@
         console.warn(
           `[Mapa] Não foi possível localizar "${item.nome}".`,
           {
+            id: item.id,
             endereco: item.endereco,
             localizacao: item.mapa
           }
         );
+
         continue;
       }
 
-      const marker = L.marker(
-        [coords.lat, coords.lon],
-        {
-          title: item.nome,
-          alt: `Localização de ${item.nome}`,
-          keyboard: true
-        }
+      upsertMapLocation(item, coords);
+      saveMapLocations();
+
+      const location = getMapLocation(item.id);
+
+      if (!location) {
+        continue;
+      }
+
+      createMarkerFromLocation(
+        location,
+        item
       );
 
-      const mapUrl = mapsUrl(item);
-
-      marker
-        .bindPopup(`
-          <div class="map-popup-title">
-            ${escapeHtml(item.nome)}
-          </div>
-
-          <div class="map-popup-service">
-            ${escapeHtml(
-              item.servico || "Empreendedor da comunidade"
-            )}
-          </div>
-
-          <div style="
-            font-size:12px;
-            color:rgba(5,53,85,0.62);
-            line-height:1.45;
-            margin-bottom:8px;
-          ">
-            ${escapeHtml(item.endereco || "Localização cadastrada")}
-          </div>
-
-          ${
-            mapUrl
-              ? `
-                <a
-                  class="map-popup-link"
-                  href="${mapUrl}"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Ver rotas &rarr;
-                </a>
-              `
-              : ""
-          }
-        `)
-        .addTo(markersLayer);
-
-      marker.on("click", () => {
-        highlightMapBusiness(item.id);
-      });
-
-      marker.businessId = item.id;
-
-      markersById.set(item.id, marker);
-
       points.push([
-        coords.lat,
-        coords.lon
+        location.latitude,
+        location.longitude
       ]);
 
-      locatedCount++;
-
-      // Se não veio do cache/Google Maps, respeita o intervalo
-      // do Nominatim entre consultas.
-      if (coords.source === "nominatim") {
-        await new Promise(resolve =>
-          setTimeout(resolve, NOMINATIM_DELAY_MS)
-        );
+      if (!mapHasInitializedViewport) {
+        if (points.length === 1) {
+          leafletMap.setView(points[0], 15);
+        } else {
+          leafletMap.fitBounds(points, {
+            padding: [40, 40],
+            maxZoom: 16
+          });
+        }
       }
     }
 
-    if (updateToken !== mapUpdateToken) {
-      return;
-    }
-
-    if (!locatedCount) {
+    if (points.length) {
+      mapPlaceholder.style.display = "none";
+      mapHasInitializedViewport = true;
+      statusLine.dataset.mapLocated = String(points.length);
+    } else {
       mapPlaceholder.querySelector("span").textContent =
-        "Não foi possível localizar nenhuma empresa. Verifique a coluna Endereço ou Localização (Link) da planilha.";
+        "Não foi possível localizar nenhuma empresa. Verifique a coluna Endereço.";
       mapPlaceholder.style.display = "flex";
       statusLine.dataset.mapLocated = "0";
-      leafletMap.setView([-7.115, -34.86], 12);
-      leafletMap.invalidateSize();
-
-      if (typeof renderMapBusinessList === "function") {
-        renderMapBusinessList([]);
-      }
-
-      return;
     }
-
-    mapPlaceholder.style.display = "none";
-
-    if (points.length === 1) {
-      leafletMap.setView(points[0], 15);
-    } else {
-      leafletMap.fitBounds(points, {
-        padding: [40, 40],
-        maxZoom: 16
-      });
-    }
-
-    mapHasInitializedViewport = true;
-    statusLine.dataset.mapLocated = String(locatedCount);
 
     if (typeof renderMapBusinessList === "function") {
       renderMapBusinessList(getFilteredItems());
