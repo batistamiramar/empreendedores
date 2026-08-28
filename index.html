@@ -1,3112 +1,1070 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>Quadro de Empreendedores</title>
-
-  <meta
-    name="description"
-    content="Encontre produtos e serviços oferecidos por pessoas da nossa comunidade."
-  >
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-  <link
-    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
-    rel="stylesheet"
-  >
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-
-  <style>
-    :root {
-      --bg: #16323E;
-      --bg-deep: #0F262F;
-      --card: #FBF7EE;
-      --card-edge: #EFE7D3;
-      --ink: #1C2B2E;
-      --ink-soft: #566769;
-      --gold: #D2A24C;
-      --gold-deep: #B98531;
-      --green: #4C7A5D;
-      --brick: #A85B3F;
-      --paper-line: rgba(28, 43, 46, 0.09);
-      --white-soft: rgba(251, 247, 238, 0.72);
-      --shadow: 0 18px 44px -22px rgba(0,0,0,.65);
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-
-      background:
-        radial-gradient(circle at 15% 5%, rgba(210,162,76,.10), transparent 32%),
-        radial-gradient(circle at 90% 0%, rgba(76,122,93,.12), transparent 38%),
-        var(--bg);
-
-      color: var(--ink);
-      font-family: "Inter", sans-serif;
-    }
-
-    button,
-    input,
-    select {
-      font: inherit;
-    }
-
-    button {
-      cursor: pointer;
-    }
-
-    a {
-      text-decoration: none;
-      color: inherit;
-    }
-
-    /* =========================================================
-       CABEÇALHO
-    ========================================================= */
-
-    header {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 42px 24px 22px;
-      text-align: center;
-    }
-
-    .eyebrow {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 11px;
-      letter-spacing: .19em;
-      text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 12px;
-    }
-
-    h1 {
-      margin: 0;
-
-      font-family: "Fraunces", serif;
-      font-weight: 700;
-      font-size: clamp(37px, 6vw, 63px);
-      letter-spacing: -.025em;
-
-      color: var(--card);
-    }
-
-    .subtitle {
-      max-width: 650px;
-      margin: 14px auto 0;
-
-      color: rgba(251,247,238,.67);
-      line-height: 1.6;
-      font-size: 15px;
-    }
-
-    .header-actions {
-      margin-top: 22px;
-
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .outline-btn,
-    .gold-btn {
-      min-height: 40px;
-
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-
-      border-radius: 999px;
-      padding: 9px 16px;
-
-      font-family: "JetBrains Mono", monospace;
-      font-size: 11px;
-      letter-spacing: .05em;
-      text-transform: uppercase;
-
-      transition: .18s ease;
-    }
-
-    .outline-btn {
-      color: var(--gold);
-      background: rgba(210,162,76,.07);
-      border: 1px solid rgba(210,162,76,.4);
-    }
-
-    .outline-btn:hover {
-      background: var(--gold);
-      color: var(--bg-deep);
-    }
-
-    .gold-btn {
-      border: 1px solid var(--gold);
-      background: var(--gold);
-      color: var(--bg-deep);
-      font-weight: 700;
-    }
-
-    .gold-btn:hover {
-      transform: translateY(-1px);
-      background: #E2B55C;
-    }
-
-    .outline-btn:disabled {
-      opacity: .6;
-      cursor: wait;
-    }
-
-    #refreshBtn svg {
-      transition: transform .45s ease;
-    }
-
-    #refreshBtn.spinning svg {
-      transform: rotate(360deg);
-    }
-
-    /* =========================================================
-       PAINEL DE BUSCA
-    ========================================================= */
-
-    .catalog-panel {
-      max-width: 1000px;
-      margin: 18px auto 0;
-      padding: 0 24px;
-    }
-
-    .search-wrap {
-      background: var(--card);
-      border: 1px solid var(--card-edge);
-      border-radius: 16px;
-
-      min-height: 65px;
-
-      display: flex;
-      align-items: center;
-      gap: 12px;
-
-      padding: 7px 16px 7px 20px;
-
-      box-shadow: var(--shadow);
-    }
-
-    .search-wrap svg {
-      color: var(--ink-soft);
-      flex: 0 0 auto;
-    }
-
-    #searchInput {
-      width: 100%;
-
-      border: none;
-      outline: none;
-      background: transparent;
-
-      font-size: 16px;
-      color: var(--ink);
-
-      padding: 13px 0;
-    }
-
-    #searchInput::placeholder {
-      color: #9BA6A5;
-    }
-
-    .filter-row {
-      margin-top: 16px;
-
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      flex-wrap: wrap;
-    }
-
-    .chips {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      flex: 1;
-    }
-
-    .chip {
-      border-radius: 999px;
-
-      border: 1px solid rgba(251,247,238,.17);
-      background: rgba(251,247,238,.06);
-
-      color: rgba(251,247,238,.84);
-
-      font-family: "JetBrains Mono", monospace;
-      font-size: 11px;
-
-      padding: 8px 13px;
-
-      transition: .15s ease;
-    }
-
-    .chip:hover {
-      border-color: var(--gold);
-    }
-
-    .chip.active {
-      color: var(--bg-deep);
-      background: var(--gold);
-      border-color: var(--gold);
-      font-weight: 700;
-    }
-
-    .sort-wrap {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .sort-wrap label {
-      font-size: 11px;
-      font-family: "JetBrains Mono", monospace;
-      color: rgba(251,247,238,.52);
-    }
-
-    #sortSelect,
-    #mobileCategory {
-      background: rgba(251,247,238,.08);
-      color: var(--card);
-
-      border: 1px solid rgba(251,247,238,.18);
-      border-radius: 999px;
-
-      outline: none;
-
-      padding: 8px 11px;
-
-      font-family: "JetBrains Mono", monospace;
-      font-size: 11px;
-    }
-
-    #sortSelect option,
-    #mobileCategory option {
-      background: var(--bg-deep);
-      color: white;
-    }
-
-    #mobileCategoryWrap {
-      display: none;
-    }
-
-    .status-line {
-      min-height: 21px;
-
-      margin: 18px auto 0;
-      text-align: center;
-
-      color: rgba(251,247,238,.48);
-
-      font-family: "JetBrains Mono", monospace;
-      font-size: 11px;
-    }
-
-    .error-message {
-      max-width: 680px;
-      margin: 14px auto 0;
-
-      background: rgba(168,91,63,.15);
-      border: 1px solid rgba(168,91,63,.42);
-
-      color: #F5DDD2;
-
-      padding: 11px 14px;
-
-      border-radius: 10px;
-
-      font-size: 12px;
-      text-align: center;
-
-      display: none;
-    }
-
-    /* =========================================================
-       GRID
-    ========================================================= */
-
-    main {
-      max-width: 1160px;
-
-      margin: 34px auto 0;
-      padding: 0 24px 70px;
-
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
-      gap: 22px;
-    }
-
-    .card {
-      background: var(--card);
-      border: 1px solid var(--card-edge);
-
-      border-radius: 16px;
-
-      position: relative;
-
-      padding: 21px;
-
-      box-shadow: 0 15px 34px -20px rgba(0,0,0,.65);
-
-      transition:
-        transform .18s ease,
-        box-shadow .18s ease;
-    }
-
-    .card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 23px 44px -20px rgba(0,0,0,.65);
-    }
-
-    .card-top {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-
-    .business-logo {
-      width: 62px;
-      height: 62px;
-
-      flex: 0 0 62px;
-
-      border-radius: 15px;
-
-      background: #EEE8DB;
-      border: 1px solid #E3DAC8;
-
-      object-fit: cover;
-    }
-
-    .business-logo.placeholder {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      font-family: "Fraunces", serif;
-      font-size: 24px;
-      font-weight: 700;
-
-      color: var(--gold-deep);
-    }
-
-    .business-heading {
-      min-width: 0;
-      flex: 1;
-    }
-
-    .business-name-line {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      flex-wrap: wrap;
-    }
-
-    .business-heading h3 {
-      margin: 0;
-
-      font-family: "Fraunces", serif;
-      font-weight: 600;
-
-      color: var(--ink);
-      font-size: 22px;
-
-      line-height: 1.15;
-    }
-
-    .verified {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-
-      padding: 3px 7px;
-
-      border-radius: 999px;
-
-      font-family: "JetBrains Mono", monospace;
-      font-size: 9px;
-      text-transform: uppercase;
-
-      color: var(--green);
-      background: rgba(76,122,93,.11);
-      border: 1px solid rgba(76,122,93,.22);
-    }
-
-    .service-name {
-      margin-top: 5px;
-      color: var(--ink-soft);
-      font-size: 12px;
-    }
-
-    .tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-
-      margin-top: 14px;
-    }
-
-    .tag {
-      padding: 5px 8px;
-      border-radius: 999px;
-
-      background: rgba(210,162,76,.12);
-      border: 1px solid rgba(210,162,76,.23);
-
-      color: #86611F;
-
-      font-family: "JetBrains Mono", monospace;
-      font-size: 9.5px;
-      text-transform: uppercase;
-    }
-
-    .description {
-      margin: 14px 0 0;
-
-      color: var(--ink-soft);
-      font-size: 13px;
-      line-height: 1.55;
-    }
-
-    .details {
-      margin-top: 15px;
-    }
-
-    .info-row {
-      display: flex;
-      align-items: flex-start;
-      gap: 9px;
-
-      border-top: 1px dashed var(--paper-line);
-
-      padding: 9px 0;
-
-      color: var(--ink-soft);
-      font-size: 12.5px;
-
-      line-height: 1.45;
-    }
-
-    .info-row svg {
-      flex: 0 0 auto;
-      margin-top: 1px;
-      color: var(--gold-deep);
-    }
-
-    .card-actions {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-
-      margin-top: 15px;
-    }
-
-    .card-btn {
-      min-height: 39px;
-
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 6px;
-
-      border-radius: 10px;
-
-      font-size: 11px;
-      font-weight: 600;
-
-      transition: .15s ease;
-
-      border: 1px solid #DDD5C6;
-      background: #F7F1E5;
-      color: var(--ink);
-    }
-
-    .card-btn:hover {
-      transform: translateY(-1px);
-      border-color: var(--gold);
-    }
-
-    .card-btn.whatsapp {
-      background: rgba(76,122,93,.11);
-      border-color: rgba(76,122,93,.28);
-      color: #365B43;
-    }
-
-    .card-btn.details-btn {
-      background: var(--ink);
-      color: #fff;
-      border-color: var(--ink);
-    }
-
-    .card-btn.full {
-      grid-column: 1 / -1;
-    }
-
-    .empty {
-      grid-column: 1 / -1;
-
-      color: rgba(251,247,238,.65);
-      text-align: center;
-
-      padding: 70px 20px;
-
-      font-family: "JetBrains Mono", monospace;
-      font-size: 12px;
-    }
-
-    /* =========================================================
-       SKELETON
-    ========================================================= */
-
-    .skeleton {
-      pointer-events: none;
-      overflow: hidden;
-    }
-
-    .skeleton-line,
-    .skeleton-logo {
-      background:
-        linear-gradient(
-          90deg,
-          #E9E1D3 20%,
-          #F4EEE4 40%,
-          #E9E1D3 60%
-        );
-
-      background-size: 200% 100%;
-
-      animation: shimmer 1.2s infinite;
-    }
-
-    .skeleton-logo {
-      width: 62px;
-      height: 62px;
-      border-radius: 15px;
-    }
-
-    .skeleton-line {
-      height: 12px;
-      border-radius: 999px;
-      margin-top: 10px;
-    }
-
-    @keyframes shimmer {
-      from {
-        background-position: 200% 0;
-      }
-
-      to {
-        background-position: -200% 0;
-      }
-    }
-
-    /* =========================================================
-       MODAL
-    ========================================================= */
-
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-
-      z-index: 9999;
-
-      background: rgba(8,22,28,.82);
-      backdrop-filter: blur(8px);
-
-      display: none;
-      align-items: center;
-      justify-content: center;
-
-      padding: 22px;
-    }
-
-    .modal-overlay.open {
-      display: flex;
-    }
-
-    .modal {
-      width: min(640px, 100%);
-      max-height: 90vh;
-      overflow-y: auto;
-
-      position: relative;
-
-      background: var(--card);
-      border-radius: 19px;
-      border: 1px solid var(--card-edge);
-
-      padding: 27px;
-
-      box-shadow: 0 30px 80px rgba(0,0,0,.4);
-    }
-
-    .close-modal {
-      position: absolute;
-      top: 14px;
-      right: 14px;
-
-      width: 37px;
-      height: 37px;
-
-      border: none;
-      border-radius: 50%;
-
-      background: rgba(28,43,46,.08);
-      color: var(--ink);
-
-      font-size: 19px;
-    }
-
-    .modal h2 {
-      margin: 0;
-      padding-right: 42px;
-
-      font-family: "Fraunces", serif;
-      font-size: 30px;
-    }
-
-    .modal-description {
-      margin-top: 13px;
-
-      color: var(--ink-soft);
-      line-height: 1.6;
-    }
-
-    .modal-section {
-      margin-top: 22px;
-    }
-
-    .modal-section-title {
-      margin-bottom: 8px;
-
-      font-family: "JetBrains Mono", monospace;
-      font-size: 10px;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-
-      color: var(--gold-deep);
-    }
-
-    .modal-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 9px;
-
-      margin-top: 20px;
-    }
-
-    .modal-actions a {
-      border-radius: 10px;
-
-      padding: 10px 13px;
-
-      font-size: 12px;
-      font-weight: 600;
-
-      border: 1px solid #DCD3C4;
-      background: #F6EFE3;
-    }
-
-    .modal-actions a.whatsapp {
-      background: rgba(76,122,93,.12);
-      border-color: rgba(76,122,93,.28);
-      color: #365B43;
-    }
-
-    footer {
-      text-align: center;
-      color: rgba(251,247,238,.34);
-
-      padding: 0 20px 38px;
-
-      font-family: "JetBrains Mono", monospace;
-      font-size: 10px;
-    }
-
-    /* =========================================================
-       RESPONSIVO
-    ========================================================= */
-
-    @media (max-width: 720px) {
-      header {
-        padding-top: 34px;
-      }
-
-      .chips {
-        display: none;
-      }
-
-      #mobileCategoryWrap {
-        display: block;
-        flex: 1;
-      }
-
-      #mobileCategory {
-        width: 100%;
-      }
-
-      .filter-row {
-        align-items: stretch;
-      }
-
-      .sort-wrap {
-        flex: 1;
-      }
-
-      #sortSelect {
-        width: 100%;
-      }
-
-      main {
-        grid-template-columns: 1fr;
-      }
-
-      .card-actions {
-        grid-template-columns: 1fr;
-      }
-
-      .card-btn.full {
-        grid-column: auto;
-      }
-    }
-
-    @media (max-width: 480px) {
-      h1 {
-        font-size: 40px;
-      }
-
-      .subtitle {
-        font-size: 14px;
-      }
-
-      .search-wrap {
-        min-height: 58px;
-      }
-
-      .business-logo,
-      .skeleton-logo {
-        width: 55px;
-        height: 55px;
-        flex-basis: 55px;
-      }
-    }
-
-    :focus-visible {
-      outline: 2px solid var(--gold);
-      outline-offset: 2px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quadro de Empreendedores</title>
+<meta name="description" content="Encontre profissionais e serviços oferecidos por membros da Igreja Batista do Miramar.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+<style>
+  :root {
+    --navy: #053555;
+    --navy-deep: #032840;
+    --cream: #FFFFFC;
+    --card: #FFFFFF;
+    --card-edge: rgba(5, 53, 85, 0.12);
+    --ink: #053555;
+    --ink-soft: rgba(5, 53, 85, 0.62);
+    --ink-faint: rgba(5, 53, 85, 0.42);
+    --gold: #B48E3E;
+    --gold-deep: #8A6B2E;
+    --gold-tint: rgba(180, 142, 62, 0.12);
+    --gold-border: rgba(180, 142, 62, 0.38);
+    --green: #4C7A5D;
+    --green-tint: rgba(76, 122, 93, 0.12);
+    --whatsapp: #25D366;
+    --brick: #A85B3F;
+    --brick-tint: rgba(168, 91, 63, 0.14);
+    --neutral-100: rgba(5, 53, 85, 0.045);
+    --shadow-sm: 0 1px 3px rgba(5, 53, 85, 0.08);
+    --shadow-md: 0 10px 28px rgba(5, 53, 85, 0.12);
+    --shadow-lg: 0 24px 56px rgba(5, 53, 85, 0.20);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--cream);
+    color: var(--ink);
+    font-family: "Inter", sans-serif;
+  }
+
+  button, input, select { font: inherit; }
+  button { cursor: pointer; }
+  a { color: var(--gold-deep); }
+  a:hover { color: var(--gold); }
+  ::selection { background: rgba(180, 142, 62, 0.3); }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold-deep);
+  }
+  .eyebrow::before { content: ''; width: 8px; height: 8px; background: var(--gold); flex: none; }
+
+  @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+  @keyframes pop-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ============ HEADER ============ */
+  header {
+    position: relative;
+    background: var(--navy);
+    padding: 56px 24px 104px;
+    text-align: center;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(180,142,62,0.18) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .header-inner {
+    position: relative;
+    max-width: 640px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+  .church-logo { width: 88px; height: auto; display: block; }
+  .church-name {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .church-tagline {
+    font-size: 12px;
+    color: rgba(255,255,255,0.6);
+    letter-spacing: 0.08em;
+    margin-top: 6px;
+  }
+  header h1 {
+    margin: 0;
+    font-family: "Fraunces", serif;
+    font-weight: 700;
+    font-size: clamp(32px, 5vw, 52px);
+    letter-spacing: -0.02em;
+    color: #fff;
+  }
+  header .subtitle {
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 0;
+    color: rgba(255,255,255,0.78);
+    max-width: 460px;
+  }
+  .header-actions {
+    margin-top: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .outline-btn, .gold-btn {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: 999px;
+    padding: 9px 18px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: 0.18s ease;
+    border: 1px solid transparent;
+  }
+  .outline-btn { color: var(--gold); background: rgba(180,142,62,0.1); border-color: rgba(180,142,62,0.45); }
+  .outline-btn:hover { background: var(--gold); color: var(--navy-deep); }
+  .outline-btn:disabled { opacity: 0.6; cursor: wait; }
+  .gold-btn { background: var(--gold); color: #fff; font-weight: 700; }
+  .gold-btn:hover { background: #c49f4e; color: #fff; }
+  #refreshBtn svg { transition: transform 0.5s ease; }
+  #refreshBtn.spinning svg { transform: rotate(360deg); }
+
+  .header-curve { position: absolute; left: 0; right: 0; bottom: -1px; width: 100%; height: 80px; display: block; }
+
+  /* ============ MAIN / SEARCH PANEL ============ */
+  main.wrap { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+
+  .search-card {
+    background: var(--card);
+    border-radius: 20px;
+    box-shadow: var(--shadow-lg);
+    padding: 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: -84px;
+    position: relative;
+    z-index: 2;
+  }
+  .search-input-wrap { position: relative; }
+  .search-input-wrap svg {
+    position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+    color: var(--ink-soft); pointer-events: none;
+  }
+  #searchInput {
+    width: 100%;
+    height: 54px;
+    padding: 0 16px 0 46px;
+    font-size: 16px;
+    border-radius: 12px;
+    border: 1.5px solid var(--card-edge);
+    background: var(--neutral-100);
+    color: var(--ink);
+    outline: none;
+  }
+  #searchInput:focus { border-color: var(--gold-border); }
+  #searchInput::placeholder { color: var(--ink-faint); }
+
+  .filter-row { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; flex: 1; }
+  .chip {
+    border-radius: 999px;
+    border: 1px solid var(--card-edge);
+    background: var(--neutral-100);
+    color: var(--ink-soft);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 8px 14px;
+    transition: 0.15s ease;
+  }
+  .chip:hover { border-color: var(--gold-border); color: var(--ink); }
+  .chip.active { color: #fff; background: var(--gold); border-color: var(--gold); }
+
+  #mobileCategoryWrap { display: none; flex: 1; }
+  #mobileCategory, #sortSelect {
+    background: var(--neutral-100);
+    color: var(--ink);
+    border: 1px solid var(--card-edge);
+    border-radius: 999px;
+    outline: none;
+    padding: 9px 14px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  #mobileCategory { width: 100%; }
+  .sort-wrap { display: flex; gap: 8px; align-items: center; white-space: nowrap; }
+  .sort-wrap label { font-size: 11px; font-family: "JetBrains Mono", monospace; color: var(--ink-faint); }
+
+  .status-line { font-size: 13px; color: var(--ink-soft); font-weight: 600; min-height: 18px; }
+
+  .error-message {
+    display: none;
+    margin-top: 4px;
+    background: var(--brick-tint);
+    border: 1px solid rgba(168,91,63,0.4);
+    color: var(--brick);
+    padding: 11px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    text-align: center;
+  }
+  .error-actions { display: flex; gap: 10px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
+
+  /* ============ GRID / CARDS ============ */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 28px;
+    padding-bottom: 12px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--card-edge);
+    border-radius: 16px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    animation: pop-in 0.3s ease both;
+  }
+  .card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+
+  .card-top { display: flex; align-items: center; gap: 14px; }
+  .business-logo {
+    width: 56px; height: 56px; flex: 0 0 56px;
+    border-radius: 14px;
+    object-fit: cover;
+    background: var(--gold-tint);
+    border: 1px solid var(--gold-border);
+  }
+  .business-logo.placeholder {
+    display: flex; align-items: center; justify-content: center;
+    font-family: "Fraunces", serif; font-weight: 700; font-size: 21px;
+    color: var(--gold-deep);
+  }
+  .business-heading { min-width: 0; flex: 1; }
+  .business-name-line { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+  .business-heading h3 {
+    margin: 0;
+    font-family: "Fraunces", serif;
+    font-weight: 700;
+    font-size: 19px;
+    line-height: 1.25;
+    color: var(--ink);
+  }
+  .verified {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 8px; border-radius: 999px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px; text-transform: uppercase; font-weight: 700;
+    color: var(--green); background: var(--green-tint);
+    border: 1px solid rgba(76,122,93,0.25);
+  }
+  .service-name { margin-top: 3px; color: var(--ink-soft); font-size: 12.5px; }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag {
+    padding: 5px 9px; border-radius: 8px;
+    background: var(--gold-tint); border: 1px solid var(--gold-border);
+    color: var(--gold-deep);
+    font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+    font-size: 10px;
+  }
+
+  .description { margin: 0; color: var(--ink-soft); font-size: 13.5px; line-height: 1.6; }
+
+  .details { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+  .info-row {
+    display: flex; align-items: flex-start; gap: 8px;
+    font-size: 13.5px; color: var(--ink-soft); line-height: 1.45;
+  }
+  .info-row svg { flex: none; margin-top: 2px; }
+  .info-row.phone svg { color: var(--green); }
+  .info-row.address svg, .info-row.time svg { color: var(--gold-deep); }
+  .info-row .route-link {
+    font-size: 12px; font-weight: 700; text-decoration: none;
+    width: fit-content; display: inline-block; margin-top: 2px;
+  }
+
+  .card-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+  .card-actions-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .card-btn {
+    min-height: 40px;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    border-radius: 10px;
+    font-size: 13px; font-weight: 700;
+    border: 1.5px solid var(--card-edge);
+    background: var(--neutral-100);
+    color: var(--ink);
+    transition: 0.15s ease;
+  }
+  .card-btn:hover { border-color: var(--gold-border); }
+  .card-btn.whatsapp { background: var(--whatsapp); border-color: var(--whatsapp); color: #fff; }
+  .card-btn.whatsapp:hover { filter: brightness(1.05); }
+  .card-btn.coupon { border-color: var(--gold); color: var(--gold-deep); background: transparent; }
+  .card-btn.coupon:hover { background: var(--gold); color: #fff; }
+  .card-btn.full { grid-column: 1 / -1; }
+
+  .empty-state, .loading-line {
+    text-align: center;
+    padding: 72px 20px;
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+    color: var(--ink-soft);
+  }
+  .empty-state svg { color: var(--ink-faint); }
+  .empty-state .title { font-family: "Fraunces", serif; font-weight: 700; font-size: 19px; color: var(--ink); }
+  .loading-line { padding: 32px 4px 4px; font-size: 14px; font-weight: 600; text-align: left; }
+
+  .skeleton-line, .skeleton-logo {
+    background: linear-gradient(90deg, var(--card-edge) 20%, rgba(5,53,85,0.05) 40%, var(--card-edge) 60%);
+    background-size: 200% 100%;
+    animation: shimmer 1.3s infinite;
+    border-radius: 6px;
+  }
+  .skeleton-logo { width: 56px; height: 56px; border-radius: 14px; }
+
+  .load-more-wrap { display: flex; justify-content: center; padding: 8px 0 32px; }
+  .load-more-btn {
+    border-radius: 10px; padding: 12px 28px;
+    border: 1.5px solid var(--card-edge);
+    background: var(--neutral-100);
+    color: var(--ink);
+    font-weight: 700; font-size: 13px;
+  }
+  .load-more-btn:hover { border-color: var(--gold-border); color: var(--gold-deep); }
+
+  /* ============ ABOUT / HOW-TO SECTIONS ============ */
+  .section { padding: 64px 24px; }
+  .section h2 {
+    font-family: "Fraunces", serif;
+    font-size: 28px;
+    margin: 0 0 12px;
+    color: var(--ink);
+  }
+  .about-grid {
+    max-width: 1200px; margin: 0 auto;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr));
+    gap: 48px;
+  }
+  .about-text p { font-size: 15px; color: var(--ink-soft); line-height: 1.75; max-width: 460px; margin: 0; }
+  .feature-list { display: flex; flex-direction: column; gap: 18px; }
+  .feature-item { display: flex; gap: 14px; align-items: flex-start; }
+  .feature-icon {
+    width: 40px; height: 40px; flex: none; border-radius: 12px;
+    background: var(--gold-tint); display: flex; align-items: center; justify-content: center;
+  }
+  .feature-icon svg { color: var(--gold-deep); }
+  .feature-title { font-weight: 700; font-size: 14.5px; color: var(--ink); }
+  .feature-desc { font-size: 13px; color: var(--ink-soft); }
+
+  .howto-wrap { max-width: 1200px; margin: 0 auto; }
+  .howto-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 24px;
+    margin-top: 24px;
+  }
+  .howto-card {
+    display: flex; flex-direction: column; gap: 8px;
+    background: var(--card); border: 1px solid var(--card-edge); border-radius: 16px;
+    padding: 22px; box-shadow: var(--shadow-sm);
+  }
+  .howto-num { color: var(--gold-deep); font-family: "Fraunces", serif; font-weight: 800; font-size: 26px; }
+  .howto-title { font-weight: 700; font-size: 15px; margin-top: 4px; color: var(--ink); }
+  .howto-desc { font-size: 13.5px; color: var(--ink-soft); }
+  .howto-cta {
+    margin-top: 32px; display: inline-flex; border-radius: 10px;
+    background: var(--gold); color: #fff; padding: 13px 24px;
+    font-weight: 700; font-size: 14px;
+  }
+  .howto-cta:hover { background: #c49f4e; color: #fff; }
+
+  .map-section { background: var(--neutral-100); }
+  .map-container {
+    max-width: 1200px; margin: 0 auto;
+    border-radius: 18px; overflow: hidden; box-shadow: var(--shadow-md);
+    aspect-ratio: 16 / 7; min-height: 280px;
+    background: linear-gradient(135deg, rgba(5,53,85,0.06), rgba(180,142,62,0.08));
+    display: flex; align-items: center; justify-content: center;
+    text-align: center; padding: 24px;
+  }
+  .map-container .map-placeholder-text {
+    color: var(--ink-soft); font-size: 13px; max-width: 320px; line-height: 1.6;
+  }
+
+  footer {
+    background: var(--navy);
+    color: rgba(255,255,255,0.75);
+    padding: 36px 24px;
+    text-align: center;
+    font-size: 13px;
+  }
+  footer .footer-title { font-weight: 700; color: #fff; margin-bottom: 4px; }
+
+  /* ============ MODAL ============ */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(3,40,64,0.82);
+    display: none; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .coupon-modal {
+    width: min(400px, 100%);
+    background: var(--card);
+    border-radius: 20px;
+    padding: 32px 28px;
+    text-align: center;
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.35);
+  }
+  .coupon-emoji { font-size: 38px; }
+  .coupon-label {
+    font-family: "JetBrains Mono", monospace; font-size: 12px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-soft);
+  }
+  .coupon-discount { font-family: "Fraunces", serif; font-weight: 800; font-size: 34px; color: var(--gold-deep); }
+  .coupon-code {
+    font-family: "JetBrains Mono", monospace; font-weight: 700; font-size: 22px; letter-spacing: 0.08em;
+    background: var(--neutral-100); border: 1.5px dashed var(--gold-border);
+    border-radius: 10px; padding: 12px 20px; width: 100%;
+  }
+  .coupon-biz { font-size: 13.5px; color: var(--ink-soft); }
+  .coupon-copy-btn, .coupon-close-btn {
+    width: 100%; border-radius: 10px; min-height: 46px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px;
+  }
+  .coupon-copy-btn { background: var(--gold); color: #fff; border: 1px solid var(--gold); }
+  .coupon-copy-btn:hover { background: #c49f4e; }
+  .coupon-close-btn { background: transparent; color: var(--ink-soft); border: none; }
+  .coupon-close-btn:hover { color: var(--ink); }
+
+  :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+  @media (max-width: 720px) {
+    .chips { display: none; }
+    #mobileCategoryWrap { display: block; }
+    .filter-row { align-items: stretch; }
+    .sort-wrap { flex: 1; }
+    #sortSelect { width: 100%; }
+    .grid { grid-template-columns: 1fr; }
+    .card-actions-row { grid-template-columns: 1fr; }
+    .card-btn.full { grid-column: auto; }
+  }
+</style>
 </head>
-
 <body>
 
 <header>
-  <div class="eyebrow">
-    Comunidade · Serviços · Confiança
+  <div class="header-inner">
+    <img class="church-logo" src="assets/logo-igreja.png" alt="Igreja Batista do Miramar">
+    <div>
+      <div class="church-name">Igreja Batista do Miramar</div>
+      <div class="church-tagline">Comunidade &bull; Servi&ccedil;os &bull; Confian&ccedil;a</div>
+    </div>
+    <h1>Quadro de Empreendedores</h1>
+    <p class="subtitle">Encontre profissionais e servi&ccedil;os oferecidos por membros da nossa comunidade.</p>
+    <div class="header-actions">
+      <button id="refreshBtn" class="outline-btn" type="button">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+        Atualizar
+      </button>
+      <a id="registerBtn" class="gold-btn" href="#" target="_blank" rel="noopener" style="display:none;">+ Cadastrar meu neg&oacute;cio</a>
+    </div>
   </div>
-
-  <h1>
-    Quadro de Empreendedores
-  </h1>
-
-  <p class="subtitle">
-    Encontre produtos e serviços oferecidos por pessoas da nossa comunidade.
-    Pesquise, conheça e fortaleça os empreendedores que caminham conosco.
-  </p>
-
-  <div class="header-actions">
-    <button
-      id="refreshBtn"
-      class="outline-btn"
-      type="button"
-    >
-      <svg
-        width="14"
-        height="14"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-      >
-        <path d="M23 4v6h-6"></path>
-        <path d="M1 20v-6h6"></path>
-        <path d="M3.5 9a9 9 0 0 1 14.8-3.4L23 10"></path>
-        <path d="M1 14l4.6 4.4A9 9 0 0 0 20.5 15"></path>
-      </svg>
-
-      Atualizar
-    </button>
-
-    <a
-      id="registerBtn"
-      class="gold-btn"
-      href="#"
-      target="_blank"
-      rel="noopener"
-      style="display:none;"
-    >
-      + Cadastrar meu negócio
-    </a>
-  </div>
+  <svg class="header-curve" viewBox="0 0 1440 80" preserveAspectRatio="none"><path d="M0,80 C360,0 1080,0 1440,80 L1440,80 L0,80 Z" fill="var(--cream)"></path></svg>
 </header>
 
+<main class="wrap">
 
-<section class="catalog-panel">
-
-  <div class="search-wrap">
-
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-    >
-      <circle cx="11" cy="11" r="7"></circle>
-      <line x1="21" y1="21" x2="16.7" y2="16.7"></line>
-    </svg>
-
-    <input
-      id="searchInput"
-      type="search"
-      autocomplete="off"
-      placeholder="Buscar por nome, profissão, produto ou serviço..."
-    >
-
-  </div>
-
-
-  <div class="filter-row">
-
-    <div
-      class="chips"
-      id="chips"
-    ></div>
-
-
-    <div id="mobileCategoryWrap">
-      <select
-        id="mobileCategory"
-        aria-label="Filtrar por categoria"
-      >
-        <option value="">
-          Todas as categorias
-        </option>
-      </select>
+  <section class="search-card">
+    <div class="search-input-wrap">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input id="searchInput" type="search" autocomplete="off" placeholder="Ex: advogado, eletricista, manicure...">
     </div>
 
-
-    <div class="sort-wrap">
-
-      <label for="sortSelect">
-        Ordenar:
-      </label>
-
-      <select id="sortSelect">
-
-        <option value="az">
-          A–Z
-        </option>
-
-        <option value="za">
-          Z–A
-        </option>
-
-        <option value="category">
-          Categoria
-        </option>
-
-        <option value="recent">
-          Mais recentes
-        </option>
-
-      </select>
-
+    <div class="filter-row">
+      <div class="chips" id="chips"></div>
+      <div id="mobileCategoryWrap">
+        <select id="mobileCategory" aria-label="Filtrar por categoria">
+          <option value="">Todas as categorias</option>
+        </select>
+      </div>
+      <div class="sort-wrap">
+        <label for="sortSelect">Ordenar:</label>
+        <select id="sortSelect">
+          <option value="az">A&ndash;Z</option>
+          <option value="za">Z&ndash;A</option>
+          <option value="category">Categoria</option>
+          <option value="recent">Mais recentes</option>
+        </select>
+      </div>
     </div>
 
+    <div class="status-line" id="statusLine"></div>
+    <div class="error-message" id="errorMessage"></div>
+  </section>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="load-more-wrap" id="loadMoreWrap" style="display:none;">
+    <button class="load-more-btn" id="loadMoreBtn" type="button">Carregar mais</button>
   </div>
 
+</main>
 
-  <div
-    class="status-line"
-    id="statusLine"
-  ></div>
-
-
-  <div
-    class="error-message"
-    id="errorMessage"
-  ></div>
-
+<section class="section">
+  <div class="about-grid">
+    <div class="about-text">
+      <div class="eyebrow" style="margin-bottom:14px;">Sobre</div>
+      <h2>O Quadro de Empreendedores</h2>
+      <p>Um espa&ccedil;o criado pela nossa igreja para conectar quem precisa de um servi&ccedil;o a quem j&aacute; faz parte da nossa fam&iacute;lia de f&eacute;. Cada profissional listado aqui &eacute; um membro ou amigo da comunidade &mdash; apoiar &eacute; fortalecer uns aos outros.</p>
+    </div>
+    <div class="feature-list">
+      <div class="feature-item">
+        <div class="feature-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
+        <div><div class="feature-title">Comunidade</div><div class="feature-desc">Feito por e para membros da igreja.</div></div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg></div>
+        <div><div class="feature-title">Confian&ccedil;a</div><div class="feature-desc">Profissionais indicados por quem voc&ecirc; conhece.</div></div>
+      </div>
+    </div>
+  </div>
 </section>
 
+<section class="section">
+  <div class="howto-wrap">
+    <div class="eyebrow" style="margin-bottom:14px;">Participe</div>
+    <h2>Como cadastrar meu neg&oacute;cio</h2>
+    <div class="howto-grid">
+      <div class="howto-card">
+        <div class="howto-num">1</div>
+        <div class="howto-title">Preencha o formul&aacute;rio</div>
+        <div class="howto-desc">Envie nome, categoria, telefone e endere&ccedil;o para a coordena&ccedil;&atilde;o.</div>
+      </div>
+      <div class="howto-card">
+        <div class="howto-num">2</div>
+        <div class="howto-title">Aguarde a valida&ccedil;&atilde;o</div>
+        <div class="howto-desc">A equipe confere as informa&ccedil;&otilde;es antes da publica&ccedil;&atilde;o.</div>
+      </div>
+      <div class="howto-card">
+        <div class="howto-num">3</div>
+        <div class="howto-title">Apare&ccedil;a no Quadro</div>
+        <div class="howto-desc">Seu perfil entra na planilha e aparece automaticamente aqui.</div>
+      </div>
+    </div>
+    <!-- TODO: assim que houver um número de WhatsApp da coordenação, defina COORDENACAO_WHATSAPP no script abaixo para ativar este link. -->
+    <a href="#" id="coordinationBtn" class="howto-cta">Falar com a coordena&ccedil;&atilde;o</a>
+  </div>
+</section>
 
-<main id="grid"></main>
-
+<section class="section map-section">
+  <div style="max-width:1200px; margin:0 auto;">
+    <div class="eyebrow" style="margin-bottom:14px;">Onde est&atilde;o</div>
+    <h2 style="margin-bottom:16px;">Empreendedores perto de voc&ecirc;</h2>
+  </div>
+  <div id="map-container" class="map-container">
+    <div class="map-placeholder-text">O mapa do Google Maps ser&aacute; integrado aqui.</div>
+  </div>
+</section>
 
 <footer>
-  Quadro de Empreendedores — feito com carinho pela comunidade
+  <div class="footer-title">Igreja Batista do Miramar</div>
+  <div>Quadro de Empreendedores &mdash; feito com carinho pela comunidade.</div>
 </footer>
 
-
-<div
-  class="modal-overlay"
-  id="modalOverlay"
-  aria-hidden="true"
->
-
-  <div
-    class="modal"
-    role="dialog"
-    aria-modal="true"
-  >
-
-    <button
-      class="close-modal"
-      id="closeModal"
-      aria-label="Fechar"
-    >
-      ×
-    </button>
-
-    <div id="modalContent"></div>
-
+<div class="modal-overlay" id="couponOverlay">
+  <div class="coupon-modal" id="couponModal">
+    <div class="coupon-emoji">&#127915;</div>
+    <div class="coupon-label">Seu cupom</div>
+    <div class="coupon-discount" id="couponDiscount"></div>
+    <div class="coupon-code" id="couponCode"></div>
+    <div class="coupon-biz">Cupom exclusivo para<br><strong id="couponBizName"></strong></div>
+    <button class="coupon-copy-btn" id="couponCopyBtn" type="button">Copiar cupom</button>
+    <button class="coupon-close-btn" id="couponCloseBtn" type="button">Fechar</button>
   </div>
-
 </div>
 
-
 <script>
-
-  /* ===========================================================
-     CONFIGURAÇÃO
-  =========================================================== */
-
+  /* ===================== CONFIGURAÇÃO ===================== */
   const SHEET_CSV_URL =
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vS1bS5dffDMngpDZTqD7yZpzdsHpCNmh-L9vKBfVd-x6451GihNC4WCFwrIQ54sQoqC-oObH8TzOJXY/pub?gid=0&single=true&output=csv";
+    "https://docs.google.com/spreadsheets/d/1KGHMK_PyjJLIxc63YXyXxaQR_YEiLckOyzxLsmfjtO0/export?format=csv&gid=0";
 
+  // Deixe vazio para manter o botão de cadastro oculto no cabeçalho.
+  const CADASTRO_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSd1yrOmhfdBMprGtsKHNnHeGhLa8LguiyWvPgK4_nXz5WscDQ/viewform";
 
-  /*
-    Depois que você criar o Google Forms,
-    cole o link abaixo.
+  // Número de WhatsApp da coordenação (formato: 55DDDNUMERO). Vazio = botão fica desativado.
+  const COORDENACAO_WHATSAPP = "";
 
-    Exemplo:
-    const CADASTRO_FORM_URL =
-      "https://forms.gle/xxxxxxxx";
+  const CACHE_KEY = "quadro_empreendedores_miramar_v1";
+  const DISCOUNTS = [10, 15, 20, 25];
+  const CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const PAGE_SIZE = 9;
 
-    Enquanto estiver vazio,
-    o botão de cadastro fica oculto.
-  */
+  const SAMPLE = [
+    { id: 1, nome: "Marcos Vinícius Alves", servico: "Advogado", categorias: ["Advogado"], telefone: "(21) 98123-4567", whatsapp: "", endereco: "Rua das Palmeiras, 120", descricao: "", instagram: "", site: "", horario: "", logo: "", mapa: "", verificado: false, dataCadastro: "" },
+    { id: 2, nome: "Beatriz Souza Lima", servico: "Manicure", categorias: ["Manicure"], telefone: "(21) 99876-5432", whatsapp: "", endereco: "Av. Miramar, 340", descricao: "", instagram: "", site: "", horario: "", logo: "", mapa: "", verificado: false, dataCadastro: "" },
+    { id: 3, nome: "João Pedro Ramos", servico: "Eletricista", categorias: ["Eletricista"], telefone: "(21) 98555-2210", whatsapp: "", endereco: "Rua do Sol, 45", descricao: "", instagram: "", site: "", horario: "", logo: "", mapa: "", verificado: false, dataCadastro: "" },
+    { id: 4, nome: "Camila Ferreira", servico: "Contabilidade", categorias: ["Contabilidade"], telefone: "(21) 97012-8890", whatsapp: "", endereco: "Rua Rio Branco, 78", descricao: "", instagram: "", site: "", horario: "", logo: "", mapa: "", verificado: false, dataCadastro: "" },
+    { id: 5, nome: "Rafael Nunes", servico: "Fotografia", categorias: ["Fotografia"], telefone: "(21) 96420-1187", whatsapp: "", endereco: "Alameda das Flores, 200", descricao: "", instagram: "", site: "", horario: "", logo: "", mapa: "", verificado: false, dataCadastro: "" },
+    { id: 6, nome: "Ana Paula Costa", servico: "Saúde", categorias: ["Saúde"], telefone: "(21) 98890-3345", whatsapp: "", endereco: "Rua Bela Vista, 12", descricao: "", instagram: "", site: "", horario: "", logo: "", mapa: "", verificado: false, dataCadastro: "" },
+  ];
 
-  const CADASTRO_FORM_URL = "";
+  /* ===================== ELEMENTOS ===================== */
+  const grid = document.getElementById("grid");
+  const searchInput = document.getElementById("searchInput");
+  const chipsEl = document.getElementById("chips");
+  const mobileCategory = document.getElementById("mobileCategory");
+  const sortSelect = document.getElementById("sortSelect");
+  const statusLine = document.getElementById("statusLine");
+  const refreshBtn = document.getElementById("refreshBtn");
+  const errorMessage = document.getElementById("errorMessage");
+  const registerBtn = document.getElementById("registerBtn");
+  const coordinationBtn = document.getElementById("coordinationBtn");
+  const loadMoreWrap = document.getElementById("loadMoreWrap");
+  const loadMoreBtn = document.getElementById("loadMoreBtn");
+  const couponOverlay = document.getElementById("couponOverlay");
+  const couponModal = document.getElementById("couponModal");
+  const couponDiscount = document.getElementById("couponDiscount");
+  const couponCode = document.getElementById("couponCode");
+  const couponBizName = document.getElementById("couponBizName");
+  const couponCopyBtn = document.getElementById("couponCopyBtn");
+  const couponCloseBtn = document.getElementById("couponCloseBtn");
 
-
-  const CACHE_KEY =
-    "batista_miramar_empreendedores_v3";
-
-
-  /* ===========================================================
-     ELEMENTOS
-  =========================================================== */
-
-  const grid =
-    document.getElementById("grid");
-
-  const searchInput =
-    document.getElementById("searchInput");
-
-  const chipsEl =
-    document.getElementById("chips");
-
-  const mobileCategory =
-    document.getElementById("mobileCategory");
-
-  const sortSelect =
-    document.getElementById("sortSelect");
-
-  const statusLine =
-    document.getElementById("statusLine");
-
-  const refreshBtn =
-    document.getElementById("refreshBtn");
-
-  const errorMessage =
-    document.getElementById("errorMessage");
-
-  const registerBtn =
-    document.getElementById("registerBtn");
-
-  const modalOverlay =
-    document.getElementById("modalOverlay");
-
-  const modalContent =
-    document.getElementById("modalContent");
-
-  const closeModal =
-    document.getElementById("closeModal");
-
-
-  /* ===========================================================
-     ESTADO
-  =========================================================== */
-
+  /* ===================== ESTADO ===================== */
   let empreendedores = [];
-
   let activeCategory = "";
-
+  let visibleCount = PAGE_SIZE;
   let lastSuccessfulUpdate = null;
+  let currentCoupon = null;
+  let usingSample = false;
 
-
-  /* ===========================================================
-     FORMULÁRIO
-  =========================================================== */
-
-  if (
-    CADASTRO_FORM_URL &&
-    CADASTRO_FORM_URL.startsWith("http")
-  ) {
-
-    registerBtn.href =
-      CADASTRO_FORM_URL;
-
-    registerBtn.style.display =
-      "inline-flex";
-
+  if (CADASTRO_FORM_URL && CADASTRO_FORM_URL.startsWith("http")) {
+    registerBtn.href = CADASTRO_FORM_URL;
+    registerBtn.style.display = "inline-flex";
+  }
+  if (COORDENACAO_WHATSAPP) {
+    coordinationBtn.href = `https://wa.me/${COORDENACAO_WHATSAPP}?text=${encodeURIComponent("Olá! Gostaria de cadastrar meu negócio no Quadro de Empreendedores.")}`;
+    coordinationBtn.target = "_blank";
+    coordinationBtn.rel = "noopener";
   }
 
-
-  /* ===========================================================
-     UTILITÁRIOS
-  =========================================================== */
-
+  /* ===================== UTILITÁRIOS ===================== */
   function norm(value) {
-
-    return (value || "")
-      .toString()
-      .normalize("NFD")
-      .replace(
-        /[\u0300-\u036f]/g,
-        ""
-      )
-      .toLowerCase()
-      .trim();
-
+    return (value || "").toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
   }
-
-
-  function safeText(value) {
-
-    return (value || "")
-      .toString()
-      .trim();
-
-  }
-
+  function safeText(value) { return (value || "").toString().trim(); }
 
   function normalizePhone(value) {
-
-    let digits =
-      safeText(value)
-        .replace(/\D/g, "");
-
-
-    /*
-      Se o número brasileiro estiver
-      sem código do país,
-      adicionamos 55.
-    */
-
-    if (
-      digits.length >= 10 &&
-      digits.length <= 11
-    ) {
-
-      digits =
-        "55" + digits;
-
-    }
-
-
+    let digits = safeText(value).replace(/\D/g, "");
+    if (digits.length >= 10 && digits.length <= 11) digits = "55" + digits;
     return digits;
-
   }
-
-
-  function isTruthy(value) {
-
-    const text =
-      norm(value);
-
-
-    return [
-      "sim",
-      "s",
-      "true",
-      "1",
-      "yes"
-    ].includes(
-      text
-    );
-
-  }
-
-
-  function splitCategories(value) {
-
-    return safeText(value)
-      .split(/[,;|]/)
-      .map(
-        item =>
-          item.trim()
-      )
-      .filter(Boolean);
-
-  }
-
-
+  function isTruthy(value) { return ["sim", "s", "true", "1", "yes"].includes(norm(value)); }
+  function splitCategories(value) { return safeText(value).split(/[,;|]/).map(item => item.trim()).filter(Boolean); }
   function getInitials(name) {
-
-    const words =
-      safeText(name)
-        .split(/\s+/)
-        .filter(Boolean);
-
-
-    return words
-      .slice(0, 2)
-      .map(
-        word =>
-          word.charAt(0)
-      )
-      .join("")
-      .toUpperCase();
-
+    const words = safeText(name).split(/\s+/).filter(Boolean);
+    return words.slice(0, 2).map(word => word.charAt(0)).join("").toUpperCase();
   }
-
-
   function instagramUrl(value) {
-
-    const text =
-      safeText(value);
-
-
-    if (!text) {
-      return "";
-    }
-
-
-    if (
-      text.startsWith("http://") ||
-      text.startsWith("https://")
-    ) {
-
-      return text;
-
-    }
-
-
-    return (
-      "https://instagram.com/" +
-      text.replace(
-        /^@/,
-        ""
-      )
-    );
-
+    const text = safeText(value);
+    if (!text) return "";
+    if (text.startsWith("http://") || text.startsWith("https://")) return text;
+    return "https://instagram.com/" + text.replace(/^@/, "");
   }
-
-
   function websiteUrl(value) {
-
-    const text =
-      safeText(value);
-
-
-    if (!text) {
-      return "";
-    }
-
-
-    if (
-      text.startsWith("http://") ||
-      text.startsWith("https://")
-    ) {
-
-      return text;
-
-    }
-
-
-    return (
-      "https://" +
-      text
-    );
-
+    const text = safeText(value);
+    if (!text) return "";
+    if (text.startsWith("http://") || text.startsWith("https://")) return text;
+    return "https://" + text;
   }
-
-
   function mapsUrl(item) {
-
-    if (
-      item.mapa &&
-      item.mapa.startsWith("http")
-    ) {
-
-      return item.mapa;
-
-    }
-
-
-    if (!item.endereco) {
-      return "";
-    }
-
-
-    return (
-      "https://www.google.com/maps/search/?api=1&query=" +
-      encodeURIComponent(
-        item.endereco
-      )
-    );
-
+    if (item.mapa && item.mapa.startsWith("http")) return item.mapa;
+    if (!item.endereco) return "";
+    return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(item.endereco);
   }
-
-
   function whatsappUrl(item) {
-
-    const phone =
-      normalizePhone(
-        item.whatsapp ||
-        item.telefone
-      );
-
-
-    if (!phone) {
-      return "";
-    }
-
-
-    const message =
-      `Olá! Encontrei ${
-        item.nome
-      } no Quadro de Empreendedores da Igreja Batista Miramar e gostaria de mais informações.`;
-
-
-    return (
-      `https://wa.me/${phone}?text=` +
-      encodeURIComponent(
-        message
-      )
-    );
-
+    const phone = normalizePhone(item.whatsapp || item.telefone);
+    if (!phone) return "";
+    const message = `Olá! Encontrei ${item.nome} no Quadro de Empreendedores da Igreja Batista do Miramar e gostaria de saber mais sobre seus serviços.`;
+    return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+  }
+  function randCode(name) {
+    const letters = norm(name).toUpperCase().replace(/[^A-Z]/g, "");
+    const prefix = letters.slice(0, 4) || "PROM";
+    let suf = "";
+    for (let i = 0; i < 4; i++) suf += CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)];
+    return prefix + suf;
   }
 
-
-  /* ===========================================================
-     CACHE LOCAL
-  =========================================================== */
-
+  /* ===================== CACHE LOCAL ===================== */
   function saveCache() {
-
     try {
-
-      localStorage.setItem(
-        CACHE_KEY,
-        JSON.stringify({
-          timestamp:
-            Date.now(),
-
-          data:
-            empreendedores
-        })
-      );
-
-    }
-
-    catch (error) {
-
-      console.warn(
-        "Não foi possível salvar o cache:",
-        error
-      );
-
-    }
-
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data: empreendedores }));
+    } catch (error) { console.warn("Não foi possível salvar o cache:", error); }
   }
-
-
   function loadCache() {
-
     try {
-
-      const stored =
-        localStorage.getItem(
-          CACHE_KEY
-        );
-
-
-      if (!stored) {
-        return false;
-      }
-
-
-      const parsed =
-        JSON.parse(
-          stored
-        );
-
-
-      if (
-        !parsed ||
-        !Array.isArray(
-          parsed.data
-        ) ||
-        parsed.data.length === 0
-      ) {
-
-        return false;
-
-      }
-
-
-      empreendedores =
-        parsed.data;
-
-
-      lastSuccessfulUpdate =
-        parsed.timestamp ||
-        null;
-
-
+      const stored = localStorage.getItem(CACHE_KEY);
+      if (!stored) return false;
+      const parsed = JSON.parse(stored);
+      if (!parsed || !Array.isArray(parsed.data) || parsed.data.length === 0) return false;
+      empreendedores = parsed.data;
+      lastSuccessfulUpdate = parsed.timestamp || null;
       return true;
-
-    }
-
-    catch (error) {
-
-      return false;
-
-    }
-
+    } catch (error) { return false; }
   }
 
-
-  /* ===========================================================
-     SKELETON
-  =========================================================== */
-
-  function renderSkeletons() {
-
-    grid.innerHTML =
-      "";
-
-
-    for (
-      let i = 0;
-      i < 6;
-      i++
-    ) {
-
-      const skeleton =
-        document.createElement(
-          "article"
-        );
-
-
-      skeleton.className =
-        "card skeleton";
-
-
-      skeleton.innerHTML =
-        `
-          <div class="card-top">
-
-            <div class="skeleton-logo"></div>
-
-            <div style="flex:1;">
-
-              <div
-                class="skeleton-line"
-                style="width:66%;height:18px;"
-              ></div>
-
-              <div
-                class="skeleton-line"
-                style="width:43%;"
-              ></div>
-
-            </div>
-
-          </div>
-
-          <div
-            class="skeleton-line"
-            style="margin-top:22px;width:92%;"
-          ></div>
-
-          <div
-            class="skeleton-line"
-            style="width:78%;"
-          ></div>
-
-          <div
-            class="skeleton-line"
-            style="margin-top:22px;width:100%;height:38px;"
-          ></div>
-        `;
-
-
-      grid.appendChild(
-        skeleton
-      );
-
-    }
-
-  }
-
-
-  /* ===========================================================
-     PLANILHA
-  =========================================================== */
-
+  /* ===================== PLANILHA ===================== */
   function parseRowsFromSheet(rows) {
-
-    return rows
-      .map(
-        (row, index) => {
-
-          function getValue(keys) {
-
-            for (
-              const key of keys
-            ) {
-
-              const column =
-                Object.keys(row)
-                  .find(
-                    current =>
-                      norm(current) ===
-                      norm(key)
-                  );
-
-
-              if (
-                column &&
-                row[column] !==
-                  undefined &&
-                row[column] !==
-                  null
-              ) {
-
-                return safeText(
-                  row[column]
-                );
-
-              }
-
-            }
-
-
-            return "";
-
-          }
-
-
-          const principalService =
-            getValue([
-              "Servico",
-              "Serviço"
-            ]);
-
-
-          let categorias =
-            splitCategories(
-              getValue([
-                "Categorias",
-                "Categoria"
-              ])
-            );
-
-
-          if (
-            principalService &&
-            !categorias.some(
-              category =>
-                norm(category) ===
-                norm(principalService)
-            )
-          ) {
-
-            categorias.unshift(
-              principalService
-            );
-
-          }
-
-
-          return {
-
-            id:
-              index + 1,
-
-            nome:
-              getValue([
-                "Nome"
-              ]),
-
-            servico:
-              principalService,
-
-            categorias:
-              categorias,
-
-            telefone:
-              getValue([
-                "Telefone"
-              ]),
-
-            whatsapp:
-              getValue([
-                "Whatsapp",
-                "WhatsApp"
-              ]),
-
-            endereco:
-              getValue([
-                "Endereco",
-                "Endereço"
-              ]),
-
-            descricao:
-              getValue([
-                "Descricao",
-                "Descrição"
-              ]),
-
-            instagram:
-              getValue([
-                "Instagram"
-              ]),
-
-            site:
-              getValue([
-                "Site",
-                "Website"
-              ]),
-
-            horario:
-              getValue([
-                "Horario",
-                "Horário",
-                "Horario de atendimento",
-                "Horário de atendimento"
-              ]),
-
-            logo:
-              getValue([
-                "Logo",
-                "Imagem",
-                "Foto"
-              ]),
-
-            mapa:
-              getValue([
-                "Mapa",
-                "Google Maps"
-              ]),
-
-            verificado:
-              isTruthy(
-                getValue([
-                  "Verificado"
-                ])
-              ),
-
-            dataCadastro:
-              getValue([
-                "Data",
-                "Data Cadastro",
-                "Data de Cadastro"
-              ])
-
-          };
-
+    return rows.map((row, index) => {
+      function getValue(keys) {
+        for (const key of keys) {
+          const column = Object.keys(row).find(current => norm(current) === norm(key));
+          if (column && row[column] !== undefined && row[column] !== null) return safeText(row[column]);
         }
-      )
-
-      .filter(
-        item =>
-          item.nome
-      );
-
+        return "";
+      }
+      const principalService = getValue(["Servico", "Serviço"]);
+      let categorias = splitCategories(getValue(["Categorias", "Categoria"]));
+      if (principalService && !categorias.some(category => norm(category) === norm(principalService))) {
+        categorias.unshift(principalService);
+      }
+      return {
+        id: index + 1,
+        nome: getValue(["Nome"]),
+        servico: principalService,
+        categorias: categorias,
+        telefone: getValue(["Telefone"]),
+        whatsapp: getValue(["Whatsapp", "WhatsApp"]),
+        endereco: getValue(["Endereco", "Endereço"]),
+        descricao: getValue(["Descricao", "Descrição"]),
+        instagram: getValue(["Instagram"]),
+        site: getValue(["Site", "Website"]),
+        horario: getValue(["Horario", "Horário", "Horario de atendimento", "Horário de atendimento"]),
+        logo: getValue(["Logo", "Imagem", "Foto"]),
+        mapa: getValue(["Mapa", "Google Maps"]),
+        verificado: isTruthy(getValue(["Verificado"])),
+        dataCadastro: getValue(["Carimbo de data/hora", "Data", "Data Cadastro", "Data de Cadastro"]),
+      };
+    }).filter(item => item.nome && item.verificado);
   }
 
-
-  /* ===========================================================
-     FILTROS
-  =========================================================== */
-
+  /* ===================== FILTROS / ORDENAÇÃO ===================== */
   function allCategories() {
-
-    const categories =
-      new Map();
-
-
-    empreendedores
-      .flatMap(
-        item =>
-          item.categorias || []
-      )
-      .forEach(
-        category => {
-
-          const key =
-            norm(category);
-
-
-          if (
-            key &&
-            !categories.has(key)
-          ) {
-
-            categories.set(
-              key,
-              category
-            );
-
-          }
-
-        }
-      );
-
-
-    return [
-      ...categories.values()
-    ].sort(
-      (a, b) =>
-        a.localeCompare(
-          b,
-          "pt-BR"
-        )
-    );
-
+    const categories = new Map();
+    empreendedores.flatMap(item => item.categorias || []).forEach(category => {
+      const key = norm(category);
+      if (key && !categories.has(key)) categories.set(key, category);
+    });
+    return [...categories.values()].sort((a, b) => a.localeCompare(b, "pt-BR"));
   }
-
 
   function renderCategories() {
+    const categories = allCategories();
+    chipsEl.innerHTML = "";
+    mobileCategory.innerHTML = `<option value="">Todas as categorias</option>`;
 
-    const categories =
-      allCategories();
+    const all = document.createElement("button");
+    all.className = "chip" + (!activeCategory ? " active" : "");
+    all.type = "button";
+    all.textContent = "Todos";
+    all.onclick = () => { activeCategory = ""; mobileCategory.value = ""; visibleCount = PAGE_SIZE; renderCategories(); renderGrid(); };
+    chipsEl.appendChild(all);
 
+    categories.forEach(category => {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "chip" + (norm(activeCategory) === norm(category) ? " active" : "");
+      chip.textContent = category;
+      chip.onclick = () => { activeCategory = category; mobileCategory.value = category; visibleCount = PAGE_SIZE; renderCategories(); renderGrid(); };
+      chipsEl.appendChild(chip);
 
-    chipsEl.innerHTML =
-      "";
+      const option = document.createElement("option");
+      option.value = category;
+      option.textContent = category;
+      mobileCategory.appendChild(option);
+    });
 
-
-    mobileCategory.innerHTML =
-      `<option value="">
-        Todas as categorias
-      </option>`;
-
-
-    const all =
-      document.createElement(
-        "button"
-      );
-
-
-    all.className =
-      "chip" +
-      (
-        !activeCategory
-          ? " active"
-          : ""
-      );
-
-
-    all.textContent =
-      "Todos";
-
-
-    all.onclick =
-      () => {
-
-        activeCategory =
-          "";
-
-        mobileCategory.value =
-          "";
-
-        renderCategories();
-
-        renderGrid();
-
-      };
-
-
-    chipsEl.appendChild(
-      all
-    );
-
-
-    categories.forEach(
-      category => {
-
-        const chip =
-          document.createElement(
-            "button"
-          );
-
-
-        chip.className =
-          "chip" +
-          (
-            norm(activeCategory) ===
-            norm(category)
-              ? " active"
-              : ""
-          );
-
-
-        chip.textContent =
-          category;
-
-
-        chip.onclick =
-          () => {
-
-            activeCategory =
-              category;
-
-            mobileCategory.value =
-              category;
-
-            renderCategories();
-
-            renderGrid();
-
-          };
-
-
-        chipsEl.appendChild(
-          chip
-        );
-
-
-        const option =
-          document.createElement(
-            "option"
-          );
-
-
-        option.value =
-          category;
-
-        option.textContent =
-          category;
-
-
-        mobileCategory.appendChild(
-          option
-        );
-
-      }
-    );
-
-
-    mobileCategory.value =
-      activeCategory;
-
+    mobileCategory.value = activeCategory;
   }
-
 
   function getFilteredItems() {
+    const query = norm(searchInput.value);
+    let result = empreendedores.filter(item => {
+      const searchable = [item.nome, item.servico, item.telefone, item.endereco, item.descricao, item.instagram, ...(item.categorias || [])].map(norm).join(" ");
+      const queryMatch = !query || searchable.includes(query);
+      const categoryMatch = !activeCategory || (item.categorias || []).some(category => norm(category) === norm(activeCategory));
+      return queryMatch && categoryMatch;
+    });
 
-    const query =
-      norm(
-        searchInput.value
-      );
-
-
-    let result =
-      empreendedores.filter(
-        item => {
-
-          const searchable =
-            [
-              item.nome,
-              item.servico,
-              item.telefone,
-              item.endereco,
-              item.descricao,
-              item.instagram,
-              ...(item.categorias || [])
-            ]
-            .map(norm)
-            .join(" ");
-
-
-          const queryMatch =
-            !query ||
-            searchable.includes(
-              query
-            );
-
-
-          const categoryMatch =
-            !activeCategory ||
-            (
-              item.categorias || []
-            )
-            .some(
-              category =>
-                norm(category) ===
-                norm(activeCategory)
-            );
-
-
-          return (
-            queryMatch &&
-            categoryMatch
-          );
-
-        }
-      );
-
-
-    switch (
-      sortSelect.value
-    ) {
-
+    switch (sortSelect.value) {
       case "za":
-
-        result.sort(
-          (a, b) =>
-            b.nome.localeCompare(
-              a.nome,
-              "pt-BR"
-            )
-        );
-
+        result.sort((a, b) => b.nome.localeCompare(a.nome, "pt-BR"));
         break;
-
-
       case "category":
-
-        result.sort(
-          (a, b) => {
-
-            const categoryA =
-              a.servico ||
-              a.categorias?.[0] ||
-              "";
-
-            const categoryB =
-              b.servico ||
-              b.categorias?.[0] ||
-              "";
-
-
-            return (
-              categoryA.localeCompare(
-                categoryB,
-                "pt-BR"
-              ) ||
-              a.nome.localeCompare(
-                b.nome,
-                "pt-BR"
-              )
-            );
-
-          }
-        );
-
+        result.sort((a, b) => {
+          const categoryA = a.servico || a.categorias?.[0] || "";
+          const categoryB = b.servico || b.categorias?.[0] || "";
+          return categoryA.localeCompare(categoryB, "pt-BR") || a.nome.localeCompare(b.nome, "pt-BR");
+        });
         break;
-
-
       case "recent":
-
-        result.sort(
-          (a, b) => {
-
-            const dateA =
-              Date.parse(
-                a.dataCadastro
-              ) || 0;
-
-            const dateB =
-              Date.parse(
-                b.dataCadastro
-              ) || 0;
-
-
-            if (
-              dateA === dateB
-            ) {
-
-              return (
-                b.id -
-                a.id
-              );
-
-            }
-
-
-            return (
-              dateB -
-              dateA
-            );
-
-          }
-        );
-
+        result.sort((a, b) => {
+          const dateA = Date.parse(a.dataCadastro) || 0;
+          const dateB = Date.parse(b.dataCadastro) || 0;
+          return dateA === dateB ? b.id - a.id : dateB - dateA;
+        });
         break;
-
-
       default:
-
-        result.sort(
-          (a, b) =>
-            a.nome.localeCompare(
-              b.nome,
-              "pt-BR"
-            )
-        );
-
+        result.sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
     }
-
-
     return result;
-
   }
 
-
-  /* ===========================================================
-     ÍCONES
-  =========================================================== */
-
-  const phoneIcon =
-    `
-      <svg
-        width="14"
-        height="14"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-      >
-        <path
-          d="M22 16.9v3a2 2 0 0 1-2.2 2
-          19.8 19.8 0 0 1-8.6-3
-          19.5 19.5 0 0 1-6-6
-          19.8 19.8 0 0 1-3.1-8.7
-          A2 2 0 0 1 4.1 2h3
-          a2 2 0 0 1 2 1.7"
-        ></path>
-      </svg>
-    `;
-
-
-  const mapIcon =
-    `
-      <svg
-        width="14"
-        height="14"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-      >
-        <path
-          d="M21 10c0 7-9 13-9 13
-          s-9-6-9-13
-          a9 9 0 0 1 18 0z"
-        ></path>
-
-        <circle
-          cx="12"
-          cy="10"
-          r="3"
-        ></circle>
-      </svg>
-    `;
-
-
-  const clockIcon =
-    `
-      <svg
-        width="14"
-        height="14"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-      >
-        <circle
-          cx="12"
-          cy="12"
-          r="9"
-        ></circle>
-
-        <path
-          d="M12 7v5l3 2"
-        ></path>
-      </svg>
-    `;
-
-
-  /* ===========================================================
-     CARD
-  =========================================================== */
-
-  function createCard(item) {
-
-    const card =
-      document.createElement(
-        "article"
-      );
-
-
-    card.className =
-      "card";
-
-
-    /*
-      Logotipo
-    */
-
-    let logoHTML =
-      "";
-
-
-    if (
-      item.logo &&
-      item.logo.startsWith("http")
-    ) {
-
-      logoHTML =
-        `
-          <img
-            class="business-logo"
-            src="${item.logo}"
-            alt="Logo de ${item.nome}"
-            loading="lazy"
-            onerror="
-              this.style.display='none';
-              this.nextElementSibling.style.display='flex';
-            "
-          >
-
-          <div
-            class="business-logo placeholder"
-            style="display:none;"
-          >
-            ${getInitials(item.nome)}
-          </div>
-        `;
-
-    }
-
-    else {
-
-      logoHTML =
-        `
-          <div class="business-logo placeholder">
-            ${getInitials(item.nome)}
-          </div>
-        `;
-
-    }
-
-
-    const verified =
-      item.verificado
-        ? `
-            <span
-              class="verified"
-              title="Cadastro verificado pela igreja"
-            >
-              ✓ Verificado
-            </span>
-          `
-        : "";
-
-
-    const tags =
-      (item.categorias || [])
-        .slice(0, 4)
-        .map(
-          category =>
-            `
-              <span class="tag">
-                ${category}
-              </span>
-            `
-        )
-        .join("");
-
-
-    const description =
-      item.descricao
-        ? `
-            <p class="description">
-              ${item.descricao}
-            </p>
-          `
-        : "";
-
-
-    const phone =
-      item.telefone
-        ? `
-            <div class="info-row">
-              ${phoneIcon}
-
-              <span>
-                ${item.telefone}
-              </span>
-            </div>
-          `
-        : "";
-
-
-    const address =
-      item.endereco
-        ? `
-            <div class="info-row">
-              ${mapIcon}
-
-              <span>
-                ${item.endereco}
-              </span>
-            </div>
-          `
-        : "";
-
-
-    const schedule =
-      item.horario
-        ? `
-            <div class="info-row">
-              ${clockIcon}
-
-              <span>
-                ${item.horario}
-              </span>
-            </div>
-          `
-        : "";
-
-
-    const whatsapp =
-      whatsappUrl(item);
-
-
-    const map =
-      mapsUrl(item);
-
-
-    const instagram =
-      instagramUrl(
-        item.instagram
-      );
-
-
-    const website =
-      websiteUrl(
-        item.site
-      );
-
-
-    let buttons =
-      "";
-
-
-    if (whatsapp) {
-
-      buttons +=
-        `
-          <a
-            class="card-btn whatsapp"
-            href="${whatsapp}"
-            target="_blank"
-            rel="noopener"
-          >
-            WhatsApp
-          </a>
-        `;
-
-    }
-
-
-    if (map) {
-
-      buttons +=
-        `
-          <a
-            class="card-btn"
-            href="${map}"
-            target="_blank"
-            rel="noopener"
-          >
-            Localização
-          </a>
-        `;
-
-    }
-
-
-    if (instagram) {
-
-      buttons +=
-        `
-          <a
-            class="card-btn"
-            href="${instagram}"
-            target="_blank"
-            rel="noopener"
-          >
-            Instagram
-          </a>
-        `;
-
-    }
-
-
-    if (website) {
-
-      buttons +=
-        `
-          <a
-            class="card-btn"
-            href="${website}"
-            target="_blank"
-            rel="noopener"
-          >
-            Site
-          </a>
-        `;
-
-    }
-
-
-    buttons +=
-      `
-        <button
-          class="card-btn details-btn ${
-            !whatsapp &&
-            !map &&
-            !instagram &&
-            !website
-              ? "full"
-              : ""
-          }"
-          type="button"
-          data-detail-id="${item.id}"
-        >
-          Ver detalhes
-        </button>
-      `;
-
-
-    card.innerHTML =
-      `
+  /* ===================== ÍCONES ===================== */
+  const phoneIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>`;
+  const mapIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>`;
+  const clockIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>`;
+  const whatsappIcon = `<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.21h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm5.8 14.16c-.24.68-1.4 1.3-1.93 1.38-.5.08-1.12.11-1.81-.11-.42-.13-.95-.31-1.64-.6-2.88-1.24-4.76-4.14-4.9-4.33-.14-.19-1.17-1.56-1.17-2.97 0-1.41.74-2.1 1-2.39.26-.28.57-.35.76-.35h.55c.18 0 .42-.07.65.5.24.58.81 2 .88 2.14.07.14.12.31.02.5-.09.19-.14.31-.28.47-.14.17-.29.37-.42.5-.14.14-.28.29-.12.56.16.28.72 1.19 1.55 1.93 1.06.95 1.96 1.24 2.24 1.38.28.14.44.12.6-.07.17-.19.7-.81.89-1.09.19-.28.37-.23.62-.14.26.09 1.64.77 1.92.91.28.14.47.21.54.33.07.12.07.68-.17 1.36z"></path></svg>`;
+
+  /* ===================== SKELETON ===================== */
+  function renderSkeletons() {
+    grid.innerHTML = "";
+    for (let i = 0; i < 6; i++) {
+      const card = document.createElement("article");
+      card.className = "card";
+      card.innerHTML = `
         <div class="card-top">
-
-          ${logoHTML}
-
-          <div class="business-heading">
-
-            <div class="business-name-line">
-
-              <h3>
-                ${item.nome}
-              </h3>
-
-              ${verified}
-
-            </div>
-
-            <div class="service-name">
-              ${
-                item.servico ||
-                "Empreendedor da comunidade"
-              }
-            </div>
-
+          <div class="skeleton-logo"></div>
+          <div style="flex:1;">
+            <div class="skeleton-line" style="width:66%;height:16px;"></div>
+            <div class="skeleton-line" style="width:43%;height:11px;margin-top:8px;"></div>
           </div>
-
         </div>
+        <div class="skeleton-line" style="width:92%;height:11px;"></div>
+        <div class="skeleton-line" style="width:78%;height:11px;"></div>
+        <div class="skeleton-line" style="width:100%;height:38px;margin-top:6px;"></div>`;
+      grid.appendChild(card);
+    }
+  }
 
-        ${
-          tags
-            ? `<div class="tags">${tags}</div>`
-            : ""
-        }
+  /* ===================== CARD ===================== */
+  function createCard(item) {
+    const card = document.createElement("article");
+    card.className = "card";
 
-        ${description}
+    let logoHTML;
+    if (item.logo && item.logo.startsWith("http")) {
+      logoHTML = `
+        <img class="business-logo" src="${item.logo}" alt="Logo de ${item.nome}" loading="lazy"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        <div class="business-logo placeholder" style="display:none;">${getInitials(item.nome)}</div>`;
+    } else {
+      logoHTML = `<div class="business-logo placeholder">${getInitials(item.nome)}</div>`;
+    }
 
-        <div class="details">
-          ${phone}
-          ${address}
-          ${schedule}
+    const verified = item.verificado ? `<span class="verified" title="Cadastro verificado pela igreja">&#10003; Verificado</span>` : "";
+    const tags = (item.categorias || []).slice(0, 4).map(category => `<span class="tag">${category}</span>`).join("");
+    const description = item.descricao ? `<p class="description">${item.descricao}</p>` : "";
+    const phone = item.telefone ? `<div class="info-row phone">${phoneIcon}<span>${item.telefone}</span></div>` : "";
+
+    const map = mapsUrl(item);
+    const address = item.endereco
+      ? `<div class="info-row address">${mapIcon}<div><span>${item.endereco}</span>${map ? `<br><a class="route-link" href="${map}" target="_blank" rel="noopener">Ver rotas</a>` : ""}</div></div>`
+      : "";
+    const schedule = item.horario ? `<div class="info-row time">${clockIcon}<span>${item.horario}</span></div>` : "";
+
+    const whatsapp = whatsappUrl(item);
+    const instagram = instagramUrl(item.instagram);
+    const website = websiteUrl(item.site);
+
+    let extraButtons = "";
+    if (instagram) extraButtons += `<a class="card-btn" href="${instagram}" target="_blank" rel="noopener">Instagram</a>`;
+    if (website) extraButtons += `<a class="card-btn" href="${website}" target="_blank" rel="noopener">Site</a>`;
+
+    card.innerHTML = `
+      <div class="card-top">
+        ${logoHTML}
+        <div class="business-heading">
+          <div class="business-name-line"><h3>${item.nome}</h3>${verified}</div>
+          <div class="service-name">${item.servico || "Empreendedor da comunidade"}</div>
         </div>
+      </div>
+      ${tags ? `<div class="tags">${tags}</div>` : ""}
+      ${description}
+      <div class="details">${phone}${address}${schedule}</div>
+      <div class="card-actions">
+        ${whatsapp ? `<a class="card-btn whatsapp ${!extraButtons ? "full" : ""}" href="${whatsapp}" target="_blank" rel="noopener">${whatsappIcon} WhatsApp</a>` : ""}
+        ${extraButtons ? `<div class="card-actions-row">${extraButtons}</div>` : ""}
+        <button class="card-btn coupon full" type="button" data-coupon-id="${item.id}">&#127915; Gerar Cupom</button>
+      </div>`;
 
-        <div class="card-actions">
-          ${buttons}
-        </div>
-      `;
-
-
-    card
-      .querySelector(
-        "[data-detail-id]"
-      )
-      .addEventListener(
-        "click",
-        () =>
-          openDetails(
-            item
-          )
-      );
-
-
+    card.querySelector("[data-coupon-id]").addEventListener("click", () => openCoupon(item));
     return card;
-
   }
 
-
-  /* ===========================================================
-     MODAL
-  =========================================================== */
-
-  function openDetails(item) {
-
-    const whatsapp =
-      whatsappUrl(item);
-
-    const map =
-      mapsUrl(item);
-
-    const instagram =
-      instagramUrl(
-        item.instagram
-      );
-
-    const website =
-      websiteUrl(
-        item.site
-      );
-
-
-    let actions =
-      "";
-
-
-    if (whatsapp) {
-
-      actions +=
-        `
-          <a
-            class="whatsapp"
-            href="${whatsapp}"
-            target="_blank"
-            rel="noopener"
-          >
-            Falar no WhatsApp
-          </a>
-        `;
-
-    }
-
-
-    if (instagram) {
-
-      actions +=
-        `
-          <a
-            href="${instagram}"
-            target="_blank"
-            rel="noopener"
-          >
-            Instagram
-          </a>
-        `;
-
-    }
-
-
-    if (website) {
-
-      actions +=
-        `
-          <a
-            href="${website}"
-            target="_blank"
-            rel="noopener"
-          >
-            Site
-          </a>
-        `;
-
-    }
-
-
-    if (map) {
-
-      actions +=
-        `
-          <a
-            href="${map}"
-            target="_blank"
-            rel="noopener"
-          >
-            Ver no mapa
-          </a>
-        `;
-
-    }
-
-
-    modalContent.innerHTML =
-      `
-        <h2>
-          ${item.nome}
-        </h2>
-
-        ${
-          item.verificado
-            ? `
-                <div
-                  class="verified"
-                  style="margin-top:10px;"
-                >
-                  ✓ Cadastro verificado pela igreja
-                </div>
-              `
-            : ""
-        }
-
-        ${
-          item.descricao
-            ? `
-                <p class="modal-description">
-                  ${item.descricao}
-                </p>
-              `
-            : ""
-        }
-
-        ${
-          item.categorias.length
-            ? `
-                <div class="modal-section">
-
-                  <div class="modal-section-title">
-                    Serviços e categorias
-                  </div>
-
-                  <div class="tags">
-
-                    ${
-                      item.categorias
-                        .map(
-                          category =>
-                            `
-                              <span class="tag">
-                                ${category}
-                              </span>
-                            `
-                        )
-                        .join("")
-                    }
-
-                  </div>
-
-                </div>
-              `
-            : ""
-        }
-
-        ${
-          item.telefone ||
-          item.endereco ||
-          item.horario
-            ? `
-                <div class="modal-section">
-
-                  <div class="modal-section-title">
-                    Informações
-                  </div>
-
-                  ${
-                    item.telefone
-                      ? `
-                          <div class="info-row">
-                            ${phoneIcon}
-
-                            <span>
-                              ${item.telefone}
-                            </span>
-                          </div>
-                        `
-                      : ""
-                  }
-
-                  ${
-                    item.endereco
-                      ? `
-                          <div class="info-row">
-                            ${mapIcon}
-
-                            <span>
-                              ${item.endereco}
-                            </span>
-                          </div>
-                        `
-                      : ""
-                  }
-
-                  ${
-                    item.horario
-                      ? `
-                          <div class="info-row">
-                            ${clockIcon}
-
-                            <span>
-                              ${item.horario}
-                            </span>
-                          </div>
-                        `
-                      : ""
-                  }
-
-                </div>
-              `
-            : ""
-        }
-
-        ${
-          actions
-            ? `
-                <div class="modal-actions">
-                  ${actions}
-                </div>
-              `
-            : ""
-        }
-      `;
-
-
-    modalOverlay.classList.add(
-      "open"
-    );
-
-
-    modalOverlay.setAttribute(
-      "aria-hidden",
-      "false"
-    );
-
-
-    document.body.style.overflow =
-      "hidden";
-
+  /* ===================== CUPOM ===================== */
+  function openCoupon(item) {
+    const discount = DISCOUNTS[Math.floor(Math.random() * DISCOUNTS.length)];
+    currentCoupon = { name: item.nome, code: randCode(item.nome), discount };
+    couponDiscount.textContent = `${currentCoupon.discount}% OFF`;
+    couponCode.textContent = currentCoupon.code;
+    couponBizName.textContent = currentCoupon.name;
+    couponCopyBtn.textContent = "Copiar cupom";
+    couponOverlay.classList.add("open");
   }
+  function closeCoupon() { couponOverlay.classList.remove("open"); currentCoupon = null; }
+  couponOverlay.addEventListener("click", event => { if (event.target === couponOverlay) closeCoupon(); });
+  couponModal.addEventListener("click", event => event.stopPropagation());
+  couponCloseBtn.addEventListener("click", closeCoupon);
+  couponCopyBtn.addEventListener("click", () => {
+    const code = currentCoupon?.code || "";
+    const done = () => { couponCopyBtn.textContent = "✓ Cupom copiado!"; setTimeout(() => { couponCopyBtn.textContent = "Copiar cupom"; }, 2000); };
+    if (navigator.clipboard) navigator.clipboard.writeText(code).then(done).catch(done);
+    else done();
+  });
+  document.addEventListener("keydown", event => { if (event.key === "Escape") closeCoupon(); });
 
-
-  function closeDetails() {
-
-    modalOverlay.classList.remove(
-      "open"
-    );
-
-
-    modalOverlay.setAttribute(
-      "aria-hidden",
-      "true"
-    );
-
-
-    document.body.style.overflow =
-      "";
-
-  }
-
-
-  closeModal.addEventListener(
-    "click",
-    closeDetails
-  );
-
-
-  modalOverlay.addEventListener(
-    "click",
-    event => {
-
-      if (
-        event.target ===
-        modalOverlay
-      ) {
-
-        closeDetails();
-
-      }
-
-    }
-  );
-
-
-  document.addEventListener(
-    "keydown",
-    event => {
-
-      if (
-        event.key ===
-        "Escape"
-      ) {
-
-        closeDetails();
-
-      }
-
-    }
-  );
-
-
-  /* ===========================================================
-     RENDERIZAÇÃO
-  =========================================================== */
-
+  /* ===================== RENDERIZAÇÃO ===================== */
   function renderGrid() {
+    const filtered = getFilteredItems();
+    const visible = filtered.slice(0, visibleCount);
+    grid.innerHTML = "";
 
-    const items =
-      getFilteredItems();
-
-
-    grid.innerHTML =
-      "";
-
-
-    if (
-      items.length === 0
-    ) {
-
-      const empty =
-        document.createElement(
-          "div"
-        );
-
-
-      empty.className =
-        "empty";
-
-
-      empty.textContent =
-        empreendedores.length
-          ? "Nenhum empreendedor encontrado com esses filtros."
-          : "Nenhum empreendedor cadastrado.";
-
-
-      grid.appendChild(
-        empty
-      );
-
+    if (filtered.length === 0) {
+      const empty = document.createElement("div");
+      empty.className = "empty-state";
+      empty.innerHTML = `
+        <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16" y2="16"></line></svg>
+        <div class="title">Nenhum empreendedor encontrado.</div>
+        <div>${empreendedores.length ? "Tente buscar outro nome ou categoria." : "Nenhum empreendedor cadastrado no momento."}</div>`;
+      grid.appendChild(empty);
+    } else {
+      visible.forEach(item => grid.appendChild(createCard(item)));
     }
 
-    else {
+    loadMoreWrap.style.display = filtered.length > visibleCount ? "flex" : "none";
 
-      items.forEach(
-        item =>
-          grid.appendChild(
-            createCard(
-              item
-            )
-          )
-      );
-
+    const term = filtered.length === 1 ? "empreendedor encontrado" : "empreendedores encontrados";
+    let updatedText = "";
+    if (lastSuccessfulUpdate) {
+      const date = new Date(lastSuccessfulUpdate);
+      const isToday = date.toLocaleDateString("pt-BR") === new Date().toLocaleDateString("pt-BR");
+      updatedText = ` • ${usingSample ? "dados de exemplo" : "atualizado " + (isToday ? "hoje" : "em " + date.toLocaleDateString("pt-BR"))} às ${date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`;
     }
-
-
-    const term =
-      items.length === 1
-        ? "negócio da nossa comunidade"
-        : "negócios da nossa comunidade";
-
-
-    let updatedText =
-      "";
-
-
-    if (
-      lastSuccessfulUpdate
-    ) {
-
-      const date =
-        new Date(
-          lastSuccessfulUpdate
-        );
-
-
-      updatedText =
-        ` • lista atualizada ${
-          date.toLocaleDateString(
-            "pt-BR"
-          ) ===
-          new Date()
-            .toLocaleDateString(
-              "pt-BR"
-            )
-            ? "hoje"
-            : "em " +
-              date.toLocaleDateString(
-                "pt-BR"
-              )
-        } às ${
-          date.toLocaleTimeString(
-            "pt-BR",
-            {
-              hour:
-                "2-digit",
-
-              minute:
-                "2-digit"
-            }
-          )
-        }`;
-
-    }
-
-
-    statusLine.textContent =
-      `${items.length} ${term}${updatedText}`;
-
+    statusLine.textContent = `${filtered.length} ${term}${updatedText}`;
   }
 
+  /* ===================== GOOGLE SHEETS ===================== */
+  function finishRefreshButton() { refreshBtn.classList.remove("spinning"); refreshBtn.disabled = false; }
 
-  /* ===========================================================
-     GOOGLE SHEETS
-  =========================================================== */
+  function loadFromGoogleSheets(showSkeleton = false) {
+    if (showSkeleton && empreendedores.length === 0) renderSkeletons();
+    errorMessage.style.display = "none";
+    refreshBtn.classList.add("spinning");
+    refreshBtn.disabled = true;
 
-  function finishRefreshButton() {
+    const requestUrl = `${SHEET_CSV_URL}&cache=${Date.now()}`;
 
-    refreshBtn
-      .classList
-      .remove(
-        "spinning"
-      );
+    Papa.parse(requestUrl, {
+      download: true,
+      header: true,
+      skipEmptyLines: true,
+      complete: results => {
+        const parsed = parseRowsFromSheet(results.data);
+        if (!parsed.length) { handleSheetError("A planilha foi carregada, mas não encontramos cadastros válidos."); return; }
+        empreendedores = parsed;
+        usingSample = false;
+        lastSuccessfulUpdate = Date.now();
+        saveCache();
 
+        const categories = allCategories();
+        if (activeCategory && !categories.some(category => norm(category) === norm(activeCategory))) activeCategory = "";
 
-    refreshBtn.disabled =
-      false;
-
+        renderCategories();
+        renderGrid();
+        finishRefreshButton();
+      },
+      error: error => { console.error(error); handleSheetError("Não conseguimos atualizar a planilha agora."); }
+    });
   }
 
-
-  function loadFromGoogleSheets(
-    showSkeleton = false
-  ) {
-
-    if (
-      showSkeleton &&
-      empreendedores.length === 0
-    ) {
-
-      renderSkeletons();
-
-    }
-
-
-    errorMessage.style.display =
-      "none";
-
-
-    refreshBtn
-      .classList
-      .add(
-        "spinning"
-      );
-
-
-    refreshBtn.disabled =
-      true;
-
-
-    const cacheBust =
-      Date.now();
-
-
-    const requestUrl =
-      `${SHEET_CSV_URL}&cache=${cacheBust}`;
-
-
-    Papa.parse(
-      requestUrl,
-      {
-
-        download:
-          true,
-
-        header:
-          true,
-
-        skipEmptyLines:
-          true,
-
-        complete:
-          results => {
-
-            const parsed =
-              parseRowsFromSheet(
-                results.data
-              );
-
-
-            if (
-              !parsed.length
-            ) {
-
-              handleSheetError(
-                "A planilha foi carregada, mas não encontramos cadastros válidos."
-              );
-
-              return;
-
-            }
-
-
-            empreendedores =
-              parsed;
-
-
-            lastSuccessfulUpdate =
-              Date.now();
-
-
-            saveCache();
-
-
-            /*
-              Se uma categoria removida
-              estava selecionada,
-              volta para todas.
-            */
-
-            const categories =
-              allCategories();
-
-
-            if (
-              activeCategory &&
-              !categories.some(
-                category =>
-                  norm(category) ===
-                  norm(activeCategory)
-              )
-            ) {
-
-              activeCategory =
-                "";
-
-            }
-
-
-            renderCategories();
-
-            renderGrid();
-
-            finishRefreshButton();
-
-          },
-
-        error:
-          error => {
-
-            console.error(
-              error
-            );
-
-
-            handleSheetError(
-              "Não conseguimos atualizar a planilha agora."
-            );
-
-          }
-
-      }
-    );
-
-  }
-
-
-  function handleSheetError(
-    message
-  ) {
-
-    const hasCache =
-      empreendedores.length > 0 ||
-      loadCache();
-
-
-    if (
-      hasCache
-    ) {
-
+  function handleSheetError(message) {
+    const hasCache = empreendedores.length > 0 || loadCache();
+    if (hasCache) {
       renderCategories();
-
       renderGrid();
-
-
-      errorMessage.textContent =
-        `${message} Exibindo a última lista disponível.`;
-
-
-      errorMessage.style.display =
-        "block";
-
+      errorMessage.textContent = `${message} Exibindo a última lista disponível.`;
+      errorMessage.style.display = "block";
+    } else {
+      errorMessage.innerHTML = `${message}<div class="error-actions">
+        <button class="load-more-btn" type="button" onclick="loadFromGoogleSheets(false)">Tentar novamente</button>
+        <button class="load-more-btn" type="button" onclick="useSample()">Ver dados de exemplo</button>
+      </div>`;
+      errorMessage.style.display = "block";
+      grid.innerHTML = "";
+      statusLine.textContent = "";
     }
-
-    else {
-
-      grid.innerHTML =
-        `
-          <div class="empty">
-            Não foi possível carregar o catálogo no momento.
-          </div>
-        `;
-
-
-      statusLine.textContent =
-        "";
-
-
-      errorMessage.textContent =
-        `${message} Clique em Atualizar para tentar novamente.`;
-
-
-      errorMessage.style.display =
-        "block";
-
-    }
-
-
     finishRefreshButton();
-
   }
 
-
-  /* ===========================================================
-     EVENTOS
-  =========================================================== */
-
-  searchInput.addEventListener(
-    "input",
-    renderGrid
-  );
-
-
-  sortSelect.addEventListener(
-    "change",
-    renderGrid
-  );
-
-
-  mobileCategory.addEventListener(
-    "change",
-    () => {
-
-      activeCategory =
-        mobileCategory.value;
-
-
-      renderCategories();
-
-      renderGrid();
-
-    }
-  );
-
-
-  refreshBtn.addEventListener(
-    "click",
-    () => {
-
-      loadFromGoogleSheets(
-        false
-      );
-
-    }
-  );
-
-
-  /* ===========================================================
-     INICIALIZAÇÃO
-  =========================================================== */
-
-  const cacheLoaded =
-    loadCache();
-
-
-  if (
-    cacheLoaded
-  ) {
-
+  function useSample() {
+    empreendedores = SAMPLE;
+    usingSample = true;
+    lastSuccessfulUpdate = Date.now();
+    errorMessage.style.display = "none";
     renderCategories();
-
     renderGrid();
-
   }
+  window.loadFromGoogleSheets = loadFromGoogleSheets;
+  window.useSample = useSample;
 
-  else {
+  /* ===================== EVENTOS ===================== */
+  searchInput.addEventListener("input", () => { visibleCount = PAGE_SIZE; renderGrid(); });
+  sortSelect.addEventListener("change", () => { visibleCount = PAGE_SIZE; renderGrid(); });
+  mobileCategory.addEventListener("change", () => { activeCategory = mobileCategory.value; visibleCount = PAGE_SIZE; renderCategories(); renderGrid(); });
+  refreshBtn.addEventListener("click", () => loadFromGoogleSheets(false));
+  loadMoreBtn.addEventListener("click", () => { visibleCount += PAGE_SIZE; renderGrid(); });
 
-    renderSkeletons();
+  /* ===================== INICIALIZAÇÃO ===================== */
+  const cacheLoaded = loadCache();
+  if (cacheLoaded) { renderCategories(); renderGrid(); }
+  else { renderSkeletons(); }
 
-  }
+  loadFromGoogleSheets(!cacheLoaded);
 
-
-  loadFromGoogleSheets(
-    !cacheLoaded
-  );
-
-
-  /*
-    Atualização automática:
-    a cada 2 minutos.
-  */
-
-  setInterval(
-    () => {
-
-      loadFromGoogleSheets(
-        false
-      );
-
-    },
-
-    2 * 60 * 1000
-  );
-
+  setInterval(() => loadFromGoogleSheets(false), 2 * 60 * 1000);
 </script>
 
 </body>
