@@ -845,7 +845,7 @@
         <div class="howto-desc">Seu perfil entra na planilha e aparece automaticamente aqui.</div>
       </div>
     </div>
-    <!-- TODO: assim que houver um número de WhatsApp da coordenação, defina COORDENACAO_WHATSAPP no script abaixo para ativar este link. -->
+    <!-- Cadastro de empreendedor: formulário oficial da igreja. -->
     <a
       href="https://docs.google.com/forms/d/e/1FAIpQLSd1yrOmhfdBMprGtsKHNnHeGhLa8LguiyWvPgK4_nXz5WscDQ/viewform?usp=header"
       id="coordinationBtn"
@@ -909,7 +909,7 @@
     "https://docs.google.com/spreadsheets/d/e/2PACX-1vSKirY9N49HM1O8sxMZ64h6gmDOcxd7Wgo1qvi2qXx9m9fziSXPDnYuzBxFxmig7-wJ22-jRmQo5SnE/pub?gid=169548160&single=true&output=csv";
 
   // Número de WhatsApp da coordenação (formato: 55DDDNUMERO). Vazio = botão "Falar com a coordenação" fica desativado.
-  const COORDENACAO_WHATSAPP = "";
+  const COORDENACAO_WHATSAPP = "558393110017";
 
   const CACHE_KEY = "quadro_empreendedores_miramar_v1";
   const GEOCODE_CACHE_KEY = "quadro_empreendedores_miramar_geocode_v1";
@@ -1058,7 +1058,10 @@
         JSON.stringify(geocodeCache)
       );
     } catch (error) {
-      /* noop */
+      console.warn(
+        "[Mapa] Não foi possível salvar o cache:",
+        error
+      );
     }
   }
 
@@ -1066,18 +1069,25 @@
     return norm(address);
   }
 
+  function validCoordinates(coords) {
+    return Boolean(
+      coords &&
+      Number.isFinite(Number(coords.lat)) &&
+      Number.isFinite(Number(coords.lon)) &&
+      Number(coords.lat) >= -90 &&
+      Number(coords.lat) <= 90 &&
+      Number(coords.lon) >= -180 &&
+      Number(coords.lon) <= 180
+    );
+  }
+
   function extractCoordinatesFromGoogleMaps(value) {
     const text = safeText(value);
 
-    if (!text || !/google\.(com|com\.br)\/maps|maps\.app\.goo\.gl/i.test(text)) {
+    if (!text) {
       return null;
     }
 
-    // Formatos comuns:
-    // @lat,lng,zoom
-    // !3dlat!4dlng
-    // ?q=lat,lng
-    // query=lat,lng
     const patterns = [
       /@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/,
       /!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/,
@@ -1102,50 +1112,117 @@
         lon >= -180 &&
         lon <= 180
       ) {
-        return { lat, lon, source: "google_maps" };
+        return {
+          lat,
+          lon,
+          source: "google_maps"
+        };
       }
     }
 
     return null;
   }
 
-  function validCoordinates(coords) {
-    return Boolean(
-      coords &&
-      Number.isFinite(Number(coords.lat)) &&
-      Number.isFinite(Number(coords.lon)) &&
-      Number(coords.lat) >= -90 &&
-      Number(coords.lat) <= 90 &&
-      Number(coords.lon) >= -180 &&
-      Number(coords.lon) <= 180
-    );
+  function normalizeAddressVariants(address) {
+    const original = safeText(address);
+
+    if (!original) {
+      return [];
+    }
+
+    const variants = new Set();
+
+    function add(value) {
+      const cleaned = safeText(value)
+        .replace(/\s+/g, " ")
+        .replace(/\s*,\s*,/g, ",")
+        .trim();
+
+      if (cleaned) {
+        variants.add(cleaned);
+      }
+    }
+
+    add(original);
+
+    let normalized = original
+      .replace(/\bN[º°o]?\.?\s*/gi, "")
+      .replace(/\bN[°º]\s*/gi, "")
+      .replace(/\bAv\.?\b/gi, "Avenida")
+      .replace(/\bR\.?\b/gi, "Rua")
+      .replace(/\bRod\.?\b/gi, "Rodovia")
+      .replace(/\s*-\s*/g, ", ");
+
+    add(normalized);
+
+    if (!/jo[aã]o\s*pessoa/i.test(normalized)) {
+      add(`${normalized}, João Pessoa, PB, Brasil`);
+    }
+
+    normalized = normalized
+      .replace(
+        /\bjo[aã]o\s*pessoa\s*[-,]?\s*pb\b/i,
+        "João Pessoa, PB"
+      )
+      .replace(
+        /\bjo[aã]o\s*pessoa\s*para[ií]ba\b/i,
+        "João Pessoa, PB"
+      );
+
+    add(normalized);
+
+    if (!/brasil|brazil/i.test(normalized)) {
+      add(`${normalized}, Brasil`);
+    }
+
+    return [...variants];
   }
 
+  async function nominatimSearch(queryText) {
+    const query = encodeURIComponent(queryText);
 
-  function buildGeocodeQuery(address) {
-    const text = safeText(address);
+    const url =
+      `https://nominatim.openstreetmap.org/search` +
+      `?format=jsonv2` +
+      `&addressdetails=1` +
+      `&limit=1` +
+      `&countrycodes=br` +
+      `&q=${query}`;
 
-    if (!text) {
-      return "";
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Accept": "application/json",
+        "Accept-Language": "pt-BR,pt;q=0.9"
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Nominatim HTTP ${response.status}`);
     }
 
-    // A coluna "Endereço" é a fonte principal.
-    // Acrescentamos Brasil para reduzir resultados ambíguos no Nominatim.
-    if (
-      !norm(text).includes("brasil") &&
-      !norm(text).includes(" brazil")
-    ) {
-      return `${text}, Brasil`;
+    const results = await response.json();
+
+    if (!Array.isArray(results) || !results.length) {
+      return null;
     }
 
-    return text;
+    const result = results[0];
+
+    const coords = {
+      lat: Number.parseFloat(result.lat),
+      lon: Number.parseFloat(result.lon),
+      source: "nominatim",
+      displayName: result.display_name || ""
+    };
+
+    return validCoordinates(coords) ? coords : null;
   }
 
   async function geocodeAddress(address, mapsLink = "") {
     const addressKey = geocodeKey(address);
 
-    // 1. Se o Forms/Sheets trouxe um link do Google Maps contendo
-    // coordenadas no próprio URL, usa essa localização primeiro.
+    // 1. Usa coordenadas explícitas no link do Google Maps, quando existirem.
     const googleCoords = extractCoordinatesFromGoogleMaps(mapsLink);
 
     if (googleCoords) {
@@ -1154,82 +1231,51 @@
       return googleCoords;
     }
 
-    // 2. Usa cache da geocodificação do endereço.
+    // 2. Usa o cache somente quando ele contém coordenadas válidas.
     if (
-      Object.prototype.hasOwnProperty.call(geocodeCache, addressKey) &&
+      Object.prototype.hasOwnProperty.call(
+        geocodeCache,
+        addressKey
+      ) &&
       validCoordinates(geocodeCache[addressKey])
     ) {
       return geocodeCache[addressKey];
     }
 
-    if (!safeText(address)) {
+    const variants = normalizeAddressVariants(address);
+
+    if (!variants.length) {
       return null;
     }
 
-    try {
-      const queryText = safeText(address);
+    // 3. Tenta várias versões do endereço.
+    for (const queryText of variants) {
+      try {
+        const coords = await nominatimSearch(queryText);
 
-      const query = encodeURIComponent(
-        /brasil|brazil/i.test(queryText)
-          ? queryText
-          : `${queryText}, Brasil`
-      );
-
-      const url =
-        `https://nominatim.openstreetmap.org/search` +
-        `?format=json` +
-        `&addressdetails=1` +
-        `&limit=1` +
-        `&countrycodes=br` +
-        `&q=${query}`;
-
-      const response = await fetch(url, {
-        headers: {
-          "Accept": "application/json",
-          "Accept-Language": "pt-BR"
+        if (coords) {
+          geocodeCache[addressKey] = coords;
+          saveGeocodeCache();
+          return coords;
         }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Nominatim HTTP ${response.status}`);
-      }
-
-      const results = await response.json();
-      const result = results && results[0];
-
-      if (!result) {
+      } catch (error) {
         console.warn(
-          `[Mapa] Endereço não encontrado: ${queryText}`
+          "[Mapa] Falha na consulta de geocodificação:",
+          queryText,
+          error
         );
-        return null;
       }
 
-      const coords = {
-        lat: Number.parseFloat(result.lat),
-        lon: Number.parseFloat(result.lon),
-        source: "nominatim"
-      };
-
-      if (!validCoordinates(coords)) {
-        console.warn(
-          `[Mapa] Coordenadas inválidas para: ${queryText}`
-        );
-        return null;
-      }
-
-      geocodeCache[addressKey] = coords;
-      saveGeocodeCache();
-
-      return coords;
-    } catch (error) {
-      console.warn(
-        "[Mapa] Falha ao localizar endereço:",
-        address,
-        error
+      await new Promise(resolve =>
+        setTimeout(resolve, NOMINATIM_DELAY_MS)
       );
-
-      return null;
     }
+
+    console.warn(
+      `[Mapa] Endereço não encontrado após várias tentativas: ${address}`
+    );
+
+    return null;
   }
 
   function ensureMap() {
