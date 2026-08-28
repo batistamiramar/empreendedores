@@ -192,9 +192,16 @@
   #searchInput:focus { border-color: var(--gold-border); }
   #searchInput::placeholder { color: var(--ink-faint); }
 
-  .filter-row { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+  .filter-row {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    align-items: stretch;
+  }
 
-  #categoryWrap { flex: 1; min-width: 180px; }
+  #categoryWrap {
+    width: 100%;
+  }
   #categorySelect, #sortSelect {
     background: var(--neutral-100);
     color: var(--ink);
@@ -408,9 +415,13 @@
 
   .map-section { background: var(--neutral-100); }
   .map-container {
-    max-width: 1200px; margin: 0 auto;
-    border-radius: 18px; overflow: hidden; box-shadow: var(--shadow-md);
-    aspect-ratio: 16 / 7; min-height: 280px;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+    height: 450px;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
     background: linear-gradient(135deg, rgba(5,53,85,0.06), rgba(180,142,62,0.08));
     position: relative;
   }
@@ -478,12 +489,66 @@
 
   :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 
-  @media (max-width: 720px) {
-    .filter-row { align-items: stretch; }
-    .sort-wrap { flex: 1; }
-    #sortSelect { width: 100%; }
-    .grid { grid-template-columns: 1fr; }
-    .card-actions-row { grid-template-columns: 1fr; }
+  @media (min-width: 768px) {
+    .filter-row {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    #categoryWrap {
+      flex: 1;
+      min-width: 180px;
+      width: auto;
+    }
+
+    .sort-wrap {
+      flex: none;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .filter-row {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    #categorySelect,
+    #sortSelect {
+      width: 100%;
+    }
+
+    .sort-wrap {
+      width: 100%;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 7px;
+    }
+
+    .sort-wrap label {
+      display: block;
+    }
+
+    .grid {
+      grid-template-columns: 1fr;
+    }
+
+    .card-actions-row {
+      grid-template-columns: 1fr;
+    }
+
+    .map-container {
+      height: 350px;
+      min-height: 350px;
+      border-radius: 14px;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .map-container {
+      height: 320px;
+      min-height: 320px;
+    }
   }
 </style>
 </head>
@@ -666,6 +731,7 @@
   let leafletMap = null;
   let markersLayer = null;
   let geocodeCache = {};
+  let mapUpdateToken = 0;
   try { geocodeCache = JSON.parse(localStorage.getItem(GEOCODE_CACHE_KEY) || "{}"); } catch (error) { geocodeCache = {}; }
 
   if (COORDENACAO_WHATSAPP) {
@@ -710,14 +776,45 @@
   }
   function logoUrl(value) {
     const text = safeText(value);
-    if (!text || !text.startsWith("http")) return "";
-    // Links do Google Drive (ex: .../open?id=XXX ou .../file/d/XXX/view) não são exibíveis
-    // diretamente como <img>; convertemos para o formato de visualização direta do Drive.
-    const driveMatch = text.match(/[-\w]{25,}/); // extrai o ID do arquivo do Drive
-    if (text.includes("drive.google.com") && driveMatch) {
-      return `https://drive.google.com/uc?export=view&id=${driveMatch[0]}`;
+
+    if (!text) return "";
+
+    // Se já for uma URL direta de imagem
+    if (
+      !text.includes("drive.google.com") &&
+      (text.startsWith("http://") || text.startsWith("https://"))
+    ) {
+      return text;
     }
-    return text;
+
+    // Google Drive:
+    // https://drive.google.com/file/d/ID/view
+    // https://drive.google.com/open?id=ID
+    // https://drive.google.com/uc?id=ID
+    // https://drive.google.com/uc?export=view&id=ID
+    if (text.includes("drive.google.com")) {
+      let fileId = "";
+
+      // /file/d/ID/
+      const fileMatch = text.match(/\/file\/d\/([^/]+)/);
+      if (fileMatch) {
+        fileId = fileMatch[1];
+      }
+
+      // ?id=ID ou &id=ID
+      if (!fileId) {
+        const idMatch = text.match(/[?&]id=([^&]+)/);
+        if (idMatch) {
+          fileId = idMatch[1];
+        }
+      }
+
+      if (fileId) {
+        return `https://drive.google.com/thumbnail?id=${encodeURIComponent(fileId)}&sz=w400`;
+      }
+    }
+
+    return "";
   }
   function whatsappUrl(item) {
     const phone = normalizePhone(item.whatsapp || item.telefone);
@@ -755,59 +852,144 @@
 
   function ensureMap() {
     if (leafletMap || typeof L === "undefined") return;
-    leafletMap = L.map("mapLeaflet", { scrollWheelZoom: false });
+
+    leafletMap = L.map("mapLeaflet", {
+      scrollWheelZoom: false,
+      tap: true,
+      zoomControl: true
+    });
+
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       maxZoom: 19
     }).addTo(leafletMap);
+
     markersLayer = L.layerGroup().addTo(leafletMap);
-    leafletMap.setView([-7.115, -34.86], 12); // ponto inicial padrão até os pins carregarem
+    leafletMap.setView([-7.115, -34.86], 12);
+
+    // O Leaflet pode inicializar antes do container terminar de receber
+    // seu tamanho responsivo. Recalculamos o viewport após o layout.
+    setTimeout(() => leafletMap && leafletMap.invalidateSize(), 100);
+    setTimeout(() => leafletMap && leafletMap.invalidateSize(), 500);
+  }
+
+  function escapeHtml(value) {
+    return safeText(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
   }
 
   async function updateMapMarkers() {
+    const updateToken = ++mapUpdateToken;
     const withAddress = empreendedores.filter(item => item.endereco);
-    if (!withAddress.length) {
-      mapPlaceholder.querySelector("span").textContent = "Nenhum endereço cadastrado ainda para exibir no mapa.";
-      mapPlaceholder.style.display = "flex";
-      return;
-    }
 
     ensureMap();
-    if (!leafletMap) {
-      mapPlaceholder.querySelector("span").textContent = "Não foi possível carregar o mapa.";
+
+    if (!withAddress.length) {
+      if (leafletMap) {
+        markersLayer.clearLayers();
+        leafletMap.setView([-7.115, -34.86], 12);
+        leafletMap.invalidateSize();
+      }
+
+      mapPlaceholder.querySelector("span").textContent =
+        "Nenhum endereço cadastrado ainda para exibir no mapa.";
       mapPlaceholder.style.display = "flex";
       return;
     }
 
+    if (!leafletMap || !markersLayer) {
+      mapPlaceholder.querySelector("span").textContent =
+        "Não foi possível carregar o mapa.";
+      mapPlaceholder.style.display = "flex";
+      return;
+    }
+
+    // Garante que o Leaflet conheça o tamanho atual do container,
+    // especialmente importante no mobile.
+    leafletMap.invalidateSize();
+
     markersLayer.clearLayers();
+
     const points = [];
+    let locatedCount = 0;
+
+    mapPlaceholder.querySelector("span").textContent =
+      "Localizando os endereços dos empreendedores...";
+    mapPlaceholder.style.display = "flex";
 
     for (const item of withAddress) {
       const key = geocodeKey(item.endereco);
       const isCached = Object.prototype.hasOwnProperty.call(geocodeCache, key);
       const coords = await geocodeAddress(item.endereco);
-      if (!isCached) await new Promise(resolve => setTimeout(resolve, NOMINATIM_DELAY_MS));
 
-      if (!coords) continue;
+      if (updateToken !== mapUpdateToken) return;
+
+      if (!isCached) {
+        await new Promise(resolve =>
+          setTimeout(resolve, NOMINATIM_DELAY_MS)
+        );
+      }
+
+      if (!coords ||
+          !Number.isFinite(coords.lat) ||
+          !Number.isFinite(coords.lon)) {
+        continue;
+      }
+
+      locatedCount++;
       points.push([coords.lat, coords.lon]);
 
       const map = mapsUrl(item);
-      const popupHtml = `
-        <div class="map-popup-title">${item.nome}</div>
-        <div class="map-popup-service">${item.servico || "Empreendedor da comunidade"}</div>
-        ${map ? `<a class="map-popup-link" href="${map}" target="_blank" rel="noopener">Ver rotas &rarr;</a>` : ""}`;
 
-      L.marker([coords.lat, coords.lon]).addTo(markersLayer).bindPopup(popupHtml);
+      const popupHtml = `
+        <div class="map-popup-title">${escapeHtml(item.nome)}</div>
+        <div class="map-popup-service">
+          ${escapeHtml(item.servico || "Empreendedor da comunidade")}
+        </div>
+        <div style="font-size:12px;color:rgba(5,53,85,0.62);line-height:1.45;margin-bottom:8px;">
+          ${escapeHtml(item.endereco)}
+        </div>
+        ${
+          map
+            ? `<a class="map-popup-link" href="${map}" target="_blank" rel="noopener">
+                 Ver rotas &rarr;
+               </a>`
+            : ""
+        }
+      `;
+
+      L.marker([coords.lat, coords.lon])
+        .addTo(markersLayer)
+        .bindPopup(popupHtml);
     }
 
     if (points.length) {
       mapPlaceholder.style.display = "none";
-      if (points.length === 1) leafletMap.setView(points[0], 15);
-      else leafletMap.fitBounds(points, { padding: [30, 30] });
-      leafletMap.invalidateSize();
+
+      if (points.length === 1) {
+        leafletMap.setView(points[0], 15);
+      } else {
+        leafletMap.fitBounds(points, {
+          padding: [40, 40],
+          maxZoom: 16
+        });
+      }
+
+      // Recalcula depois de renderizar os pins.
+      setTimeout(() => leafletMap && leafletMap.invalidateSize(), 100);
+      setTimeout(() => leafletMap && leafletMap.invalidateSize(), 500);
+
+      statusLine.dataset.mapLocated = locatedCount;
     } else {
-      mapPlaceholder.querySelector("span").textContent = "Não conseguimos localizar os endereços cadastrados no mapa.";
+      mapPlaceholder.querySelector("span").textContent =
+        "Não conseguimos localizar os endereços cadastrados no mapa. Verifique se os endereços estão completos.";
       mapPlaceholder.style.display = "flex";
+      leafletMap.setView([-7.115, -34.86], 12);
+      leafletMap.invalidateSize();
     }
   }
 
@@ -1124,6 +1306,16 @@
   categorySelect.addEventListener("change", () => { activeCategory = categorySelect.value; visibleCount = PAGE_SIZE; renderGrid(); });
   refreshBtn.addEventListener("click", () => loadFromGoogleSheets(false));
   loadMoreBtn.addEventListener("click", () => { visibleCount += PAGE_SIZE; renderGrid(); });
+
+  // Mantém o mapa correto quando o usuário gira o celular,
+  // redimensiona a janela ou muda entre desktop/mobile.
+  let mapResizeTimer = null;
+  window.addEventListener("resize", () => {
+    clearTimeout(mapResizeTimer);
+    mapResizeTimer = setTimeout(() => {
+      if (leafletMap) leafletMap.invalidateSize();
+    }, 150);
+  });
 
   /* ===================== INICIALIZAÇÃO ===================== */
   const cacheLoaded = loadCache();
