@@ -11,6 +11,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 
 <style>
   :root {
@@ -130,7 +132,7 @@
     gap: 10px;
     flex-wrap: wrap;
   }
-  .outline-btn, .gold-btn {
+  .outline-btn {
     min-height: 40px;
     display: inline-flex;
     align-items: center;
@@ -145,12 +147,12 @@
     text-transform: uppercase;
     transition: 0.18s ease;
     border: 1px solid transparent;
+    color: var(--gold);
+    background: rgba(180,142,62,0.1);
+    border-color: rgba(180,142,62,0.45);
   }
-  .outline-btn { color: var(--gold); background: rgba(180,142,62,0.1); border-color: rgba(180,142,62,0.45); }
   .outline-btn:hover { background: var(--gold); color: var(--navy-deep); }
   .outline-btn:disabled { opacity: 0.6; cursor: wait; }
-  .gold-btn { background: var(--gold); color: #fff; font-weight: 700; }
-  .gold-btn:hover { background: #c49f4e; color: #fff; }
   #refreshBtn svg { transition: transform 0.5s ease; }
   #refreshBtn.spinning svg { transform: rotate(360deg); }
 
@@ -413,12 +415,21 @@
     border-radius: 18px; overflow: hidden; box-shadow: var(--shadow-md);
     aspect-ratio: 16 / 7; min-height: 280px;
     background: linear-gradient(135deg, rgba(5,53,85,0.06), rgba(180,142,62,0.08));
-    display: flex; align-items: center; justify-content: center;
-    text-align: center; padding: 24px;
+    position: relative;
   }
   .map-container .map-placeholder-text {
-    color: var(--ink-soft); font-size: 13px; max-width: 320px; line-height: 1.6;
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    text-align: center; padding: 24px;
+    color: var(--ink-soft); font-size: 13px;
   }
+  .map-container .map-placeholder-text span { max-width: 320px; line-height: 1.6; }
+  #mapLeaflet { width: 100%; height: 100%; background: transparent; }
+  .map-container .leaflet-popup-content-wrapper { border-radius: 12px; }
+  .map-container .leaflet-popup-content { font-family: "Inter", sans-serif; margin: 12px 14px; }
+  .map-popup-title { font-family: "Fraunces", serif; font-weight: 700; font-size: 14.5px; color: var(--ink); margin-bottom: 2px; }
+  .map-popup-service { font-size: 12px; color: var(--ink-soft); margin-bottom: 8px; }
+  .map-popup-link { font-size: 12px; font-weight: 700; color: var(--gold-deep); text-decoration: none; }
 
   footer {
     background: var(--navy);
@@ -486,7 +497,7 @@
 
 <header>
   <div class="header-inner">
-    <img class="church-logo" src="assets/logo-igreja.png" alt="Igreja Batista do Miramar">
+    <img class="church-logo" src="images/logodourado.png" alt="Igreja Batista do Miramar">
     <div>
       <div class="church-name">Igreja Batista do Miramar</div>
       <div class="church-tagline">Comunidade &bull; Servi&ccedil;os &bull; Confian&ccedil;a</div>
@@ -498,7 +509,6 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
         Atualizar
       </button>
-      <a id="registerBtn" class="gold-btn" href="#" target="_blank" rel="noopener" style="display:none;">+ Cadastrar meu neg&oacute;cio</a>
     </div>
   </div>
   <svg class="header-curve" viewBox="0 0 1440 80" preserveAspectRatio="none"><path d="M0,80 C360,0 1080,0 1440,80 L1440,80 L0,80 Z" fill="var(--cream)"></path></svg>
@@ -594,7 +604,8 @@
     <h2 style="margin-bottom:16px;">Empreendedores perto de voc&ecirc;</h2>
   </div>
   <div id="map-container" class="map-container">
-    <div class="map-placeholder-text">O mapa do Google Maps ser&aacute; integrado aqui.</div>
+    <div id="mapLeaflet"></div>
+    <div class="map-placeholder-text" id="mapPlaceholder"><span>Carregando localiza&ccedil;&otilde;es dos empreendedores...</span></div>
   </div>
 </section>
 
@@ -617,28 +628,21 @@
 
 <script>
   /* ===================== CONFIGURAÇÃO ===================== */
+  // Link "Publicar na Web" (Arquivo > Compartilhar > Publicar na Web > CSV) — NÃO usar o link de "Exportar",
+  // pois ele não permite leitura via JavaScript de outro site (bloqueio de CORS).
   const SHEET_CSV_URL =
-    "https://docs.google.com/spreadsheets/d/1KGHMK_PyjJLIxc63YXyXxaQR_YEiLckOyzxLsmfjtO0/export?format=csv&gid=0";
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vSKirY9N49HM1O8sxMZ64h6gmDOcxd7Wgo1qvi2qXx9m9fziSXPDnYuzBxFxmig7-wJ22-jRmQo5SnE/pub?gid=169548160&single=true&output=csv";
 
-  // Deixe vazio para manter o botão de cadastro oculto no cabeçalho.
-  const CADASTRO_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSd1yrOmhfdBMprGtsKHNnHeGhLa8LguiyWvPgK4_nXz5WscDQ/viewform";
-
-  // Número de WhatsApp da coordenação (formato: 55DDDNUMERO). Vazio = botão fica desativado.
+  // Número de WhatsApp da coordenação (formato: 55DDDNUMERO). Vazio = botão "Falar com a coordenação" fica desativado.
   const COORDENACAO_WHATSAPP = "";
 
   const CACHE_KEY = "quadro_empreendedores_miramar_v1";
+  const GEOCODE_CACHE_KEY = "quadro_empreendedores_miramar_geocode_v1";
   const DISCOUNTS = [10, 15, 20, 25];
   const CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   const PAGE_SIZE = 9;
-
-  const SAMPLE = [
-    { id: 1, nome: "Marcos Vinícius Alves", servico: "Advogado", categorias: ["Advogado"], telefone: "(21) 98123-4567", whatsapp: "", endereco: "Rua das Palmeiras, 120", descricao: "", instagram: "", site: "", horario: "", logo: "", mapa: "", verificado: false, dataCadastro: "" },
-    { id: 2, nome: "Beatriz Souza Lima", servico: "Manicure", categorias: ["Manicure"], telefone: "(21) 99876-5432", whatsapp: "", endereco: "Av. Miramar, 340", descricao: "", instagram: "", site: "", horario: "", logo: "", mapa: "", verificado: false, dataCadastro: "" },
-    { id: 3, nome: "João Pedro Ramos", servico: "Eletricista", categorias: ["Eletricista"], telefone: "(21) 98555-2210", whatsapp: "", endereco: "Rua do Sol, 45", descricao: "", instagram: "", site: "", horario: "", logo: "", mapa: "", verificado: false, dataCadastro: "" },
-    { id: 4, nome: "Camila Ferreira", servico: "Contabilidade", categorias: ["Contabilidade"], telefone: "(21) 97012-8890", whatsapp: "", endereco: "Rua Rio Branco, 78", descricao: "", instagram: "", site: "", horario: "", logo: "", mapa: "", verificado: false, dataCadastro: "" },
-    { id: 5, nome: "Rafael Nunes", servico: "Fotografia", categorias: ["Fotografia"], telefone: "(21) 96420-1187", whatsapp: "", endereco: "Alameda das Flores, 200", descricao: "", instagram: "", site: "", horario: "", logo: "", mapa: "", verificado: false, dataCadastro: "" },
-    { id: 6, nome: "Ana Paula Costa", servico: "Saúde", categorias: ["Saúde"], telefone: "(21) 98890-3345", whatsapp: "", endereco: "Rua Bela Vista, 12", descricao: "", instagram: "", site: "", horario: "", logo: "", mapa: "", verificado: false, dataCadastro: "" },
-  ];
+  const REFRESH_INTERVAL_MS = 2 * 60 * 1000;
+  const NOMINATIM_DELAY_MS = 1100; // respeita o limite de 1 req/s da API de geocodificação
 
   /* ===================== ELEMENTOS ===================== */
   const grid = document.getElementById("grid");
@@ -649,7 +653,6 @@
   const statusLine = document.getElementById("statusLine");
   const refreshBtn = document.getElementById("refreshBtn");
   const errorMessage = document.getElementById("errorMessage");
-  const registerBtn = document.getElementById("registerBtn");
   const coordinationBtn = document.getElementById("coordinationBtn");
   const loadMoreWrap = document.getElementById("loadMoreWrap");
   const loadMoreBtn = document.getElementById("loadMoreBtn");
@@ -660,6 +663,7 @@
   const couponBizName = document.getElementById("couponBizName");
   const couponCopyBtn = document.getElementById("couponCopyBtn");
   const couponCloseBtn = document.getElementById("couponCloseBtn");
+  const mapPlaceholder = document.getElementById("mapPlaceholder");
 
   /* ===================== ESTADO ===================== */
   let empreendedores = [];
@@ -667,12 +671,11 @@
   let visibleCount = PAGE_SIZE;
   let lastSuccessfulUpdate = null;
   let currentCoupon = null;
-  let usingSample = false;
+  let leafletMap = null;
+  let markersLayer = null;
+  let geocodeCache = {};
+  try { geocodeCache = JSON.parse(localStorage.getItem(GEOCODE_CACHE_KEY) || "{}"); } catch (error) { geocodeCache = {}; }
 
-  if (CADASTRO_FORM_URL && CADASTRO_FORM_URL.startsWith("http")) {
-    registerBtn.href = CADASTRO_FORM_URL;
-    registerBtn.style.display = "inline-flex";
-  }
   if (COORDENACAO_WHATSAPP) {
     coordinationBtn.href = `https://wa.me/${COORDENACAO_WHATSAPP}?text=${encodeURIComponent("Olá! Gostaria de cadastrar meu negócio no Quadro de Empreendedores.")}`;
     coordinationBtn.target = "_blank";
@@ -719,6 +722,92 @@
     const message = `Olá! Encontrei ${item.nome} no Quadro de Empreendedores da Igreja Batista do Miramar e gostaria de saber mais sobre seus serviços.`;
     return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
   }
+  /* ===================== MAPA (Leaflet + OpenStreetMap) ===================== */
+  function saveGeocodeCache() {
+    try { localStorage.setItem(GEOCODE_CACHE_KEY, JSON.stringify(geocodeCache)); } catch (error) { /* noop */ }
+  }
+
+  function geocodeKey(address) { return norm(address); }
+
+  async function geocodeAddress(address) {
+    const key = geocodeKey(address);
+    if (!key) return null;
+    if (Object.prototype.hasOwnProperty.call(geocodeCache, key)) return geocodeCache[key];
+
+    try {
+      const query = encodeURIComponent(address);
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=br&q=${query}`, {
+        headers: { "Accept-Language": "pt-BR" }
+      });
+      const results = await response.json();
+      const coords = results && results[0] ? { lat: parseFloat(results[0].lat), lon: parseFloat(results[0].lon) } : null;
+      geocodeCache[key] = coords;
+      saveGeocodeCache();
+      return coords;
+    } catch (error) {
+      console.warn("Falha ao geocodificar endereço:", address, error);
+      return null;
+    }
+  }
+
+  function ensureMap() {
+    if (leafletMap || typeof L === "undefined") return;
+    leafletMap = L.map("mapLeaflet", { scrollWheelZoom: false });
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 19
+    }).addTo(leafletMap);
+    markersLayer = L.layerGroup().addTo(leafletMap);
+    leafletMap.setView([-7.115, -34.86], 12); // ponto inicial padrão até os pins carregarem
+  }
+
+  async function updateMapMarkers() {
+    const withAddress = empreendedores.filter(item => item.endereco);
+    if (!withAddress.length) {
+      mapPlaceholder.querySelector("span").textContent = "Nenhum endereço cadastrado ainda para exibir no mapa.";
+      mapPlaceholder.style.display = "flex";
+      return;
+    }
+
+    ensureMap();
+    if (!leafletMap) {
+      mapPlaceholder.querySelector("span").textContent = "Não foi possível carregar o mapa.";
+      mapPlaceholder.style.display = "flex";
+      return;
+    }
+
+    markersLayer.clearLayers();
+    const points = [];
+
+    for (const item of withAddress) {
+      const key = geocodeKey(item.endereco);
+      const isCached = Object.prototype.hasOwnProperty.call(geocodeCache, key);
+      const coords = await geocodeAddress(item.endereco);
+      if (!isCached) await new Promise(resolve => setTimeout(resolve, NOMINATIM_DELAY_MS));
+
+      if (!coords) continue;
+      points.push([coords.lat, coords.lon]);
+
+      const map = mapsUrl(item);
+      const popupHtml = `
+        <div class="map-popup-title">${item.nome}</div>
+        <div class="map-popup-service">${item.servico || "Empreendedor da comunidade"}</div>
+        ${map ? `<a class="map-popup-link" href="${map}" target="_blank" rel="noopener">Ver rotas &rarr;</a>` : ""}`;
+
+      L.marker([coords.lat, coords.lon]).addTo(markersLayer).bindPopup(popupHtml);
+    }
+
+    if (points.length) {
+      mapPlaceholder.style.display = "none";
+      if (points.length === 1) leafletMap.setView(points[0], 15);
+      else leafletMap.fitBounds(points, { padding: [30, 30] });
+      leafletMap.invalidateSize();
+    } else {
+      mapPlaceholder.querySelector("span").textContent = "Não conseguimos localizar os endereços cadastrados no mapa.";
+      mapPlaceholder.style.display = "flex";
+    }
+  }
+
   function randCode(name) {
     const letters = norm(name).toUpperCase().replace(/[^A-Z]/g, "");
     const prefix = letters.slice(0, 4) || "PROM";
@@ -981,7 +1070,7 @@
     if (lastSuccessfulUpdate) {
       const date = new Date(lastSuccessfulUpdate);
       const isToday = date.toLocaleDateString("pt-BR") === new Date().toLocaleDateString("pt-BR");
-      updatedText = ` • ${usingSample ? "dados de exemplo" : "atualizado " + (isToday ? "hoje" : "em " + date.toLocaleDateString("pt-BR"))} às ${date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`;
+      updatedText = ` • ${"atualizado " + (isToday ? "hoje" : "em " + date.toLocaleDateString("pt-BR"))} às ${date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`;
     }
     statusLine.textContent = `${filtered.length} ${term}${updatedText}`;
   }
@@ -1005,7 +1094,6 @@
         const parsed = parseRowsFromSheet(results.data);
         if (!parsed.length) { handleSheetError("A planilha foi carregada, mas não encontramos cadastros válidos."); return; }
         empreendedores = parsed;
-        usingSample = false;
         lastSuccessfulUpdate = Date.now();
         saveCache();
 
@@ -1014,9 +1102,10 @@
 
         renderCategories();
         renderGrid();
+        updateMapMarkers();
         finishRefreshButton();
       },
-      error: error => { console.error(error); handleSheetError("Não conseguimos atualizar a planilha agora."); }
+      error: error => { console.error(error); handleSheetError("Não conseguimos conectar com a planilha. Verifique se ela está compartilhada como \"Qualquer pessoa com o link\"."); }
     });
   }
 
@@ -1025,12 +1114,12 @@
     if (hasCache) {
       renderCategories();
       renderGrid();
+      updateMapMarkers();
       errorMessage.textContent = `${message} Exibindo a última lista disponível.`;
       errorMessage.style.display = "block";
     } else {
       errorMessage.innerHTML = `${message}<div class="error-actions">
         <button class="load-more-btn" type="button" onclick="loadFromGoogleSheets(false)">Tentar novamente</button>
-        <button class="load-more-btn" type="button" onclick="useSample()">Ver dados de exemplo</button>
       </div>`;
       errorMessage.style.display = "block";
       grid.innerHTML = "";
@@ -1038,17 +1127,7 @@
     }
     finishRefreshButton();
   }
-
-  function useSample() {
-    empreendedores = SAMPLE;
-    usingSample = true;
-    lastSuccessfulUpdate = Date.now();
-    errorMessage.style.display = "none";
-    renderCategories();
-    renderGrid();
-  }
   window.loadFromGoogleSheets = loadFromGoogleSheets;
-  window.useSample = useSample;
 
   /* ===================== EVENTOS ===================== */
   searchInput.addEventListener("input", () => { visibleCount = PAGE_SIZE; renderGrid(); });
@@ -1059,12 +1138,12 @@
 
   /* ===================== INICIALIZAÇÃO ===================== */
   const cacheLoaded = loadCache();
-  if (cacheLoaded) { renderCategories(); renderGrid(); }
+  if (cacheLoaded) { renderCategories(); renderGrid(); updateMapMarkers(); }
   else { renderSkeletons(); }
 
   loadFromGoogleSheets(!cacheLoaded);
 
-  setInterval(() => loadFromGoogleSheets(false), 2 * 60 * 1000);
+  setInterval(() => loadFromGoogleSheets(false), REFRESH_INTERVAL_MS);
 </script>
 
 </body>
