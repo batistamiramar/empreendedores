@@ -193,23 +193,9 @@
   #searchInput::placeholder { color: var(--ink-faint); }
 
   .filter-row { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
-  .chips { display: flex; gap: 8px; flex-wrap: wrap; flex: 1; }
-  .chip {
-    border-radius: 999px;
-    border: 1px solid var(--card-edge);
-    background: var(--neutral-100);
-    color: var(--ink-soft);
-    font-family: "JetBrains Mono", monospace;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 8px 14px;
-    transition: 0.15s ease;
-  }
-  .chip:hover { border-color: var(--gold-border); color: var(--ink); }
-  .chip.active { color: #fff; background: var(--gold); border-color: var(--gold); }
 
-  #mobileCategoryWrap { display: none; flex: 1; }
-  #mobileCategory, #sortSelect {
+  #categoryWrap { flex: 1; min-width: 180px; }
+  #categorySelect, #sortSelect {
     background: var(--neutral-100);
     color: var(--ink);
     border: 1px solid var(--card-edge);
@@ -220,7 +206,7 @@
     font-size: 11px;
     font-weight: 600;
   }
-  #mobileCategory { width: 100%; }
+  #categorySelect { width: 100%; }
   .sort-wrap { display: flex; gap: 8px; align-items: center; white-space: nowrap; }
   .sort-wrap label { font-size: 11px; font-family: "JetBrains Mono", monospace; color: var(--ink-faint); }
 
@@ -261,7 +247,7 @@
   }
   .card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
 
-  .card-top { display: flex; align-items: center; gap: 14px; }
+  .card-top { display: flex; align-items: flex-start; gap: 14px; }
   .business-logo {
     width: 56px; height: 56px; flex: 0 0 56px;
     border-radius: 14px;
@@ -294,6 +280,17 @@
   }
   .service-name { margin-top: 3px; color: var(--ink-soft); font-size: 12.5px; }
 
+  .social-icons { display: flex; gap: 6px; flex: none; }
+  .icon-btn {
+    width: 30px; height: 30px; flex: none;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 999px;
+    border: 1.5px solid var(--card-edge);
+    color: var(--ink-soft);
+    transition: 0.15s ease;
+  }
+  .icon-btn:hover { border-color: var(--gold-border); color: var(--gold-deep); }
+
   .tags { display: flex; flex-wrap: wrap; gap: 6px; }
   .tag {
     padding: 5px 9px; border-radius: 8px;
@@ -318,8 +315,9 @@
     width: fit-content; display: inline-block; margin-top: 2px;
   }
 
-  .card-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+  .card-actions { margin-top: 4px; }
   .card-actions-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .card-actions-row.single { grid-template-columns: 1fr; }
   .card-btn {
     min-height: 40px;
     display: flex; align-items: center; justify-content: center; gap: 6px;
@@ -335,7 +333,6 @@
   .card-btn.whatsapp:hover { filter: brightness(1.05); }
   .card-btn.coupon { border-color: var(--gold); color: var(--gold-deep); background: transparent; }
   .card-btn.coupon:hover { background: var(--gold); color: #fff; }
-  .card-btn.full { grid-column: 1 / -1; }
 
   .empty-state, .loading-line {
     text-align: center;
@@ -482,14 +479,11 @@
   :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 
   @media (max-width: 720px) {
-    .chips { display: none; }
-    #mobileCategoryWrap { display: block; }
     .filter-row { align-items: stretch; }
     .sort-wrap { flex: 1; }
     #sortSelect { width: 100%; }
     .grid { grid-template-columns: 1fr; }
     .card-actions-row { grid-template-columns: 1fr; }
-    .card-btn.full { grid-column: auto; }
   }
 </style>
 </head>
@@ -523,9 +517,8 @@
     </div>
 
     <div class="filter-row">
-      <div class="chips" id="chips"></div>
-      <div id="mobileCategoryWrap">
-        <select id="mobileCategory" aria-label="Filtrar por categoria">
+      <div id="categoryWrap">
+        <select id="categorySelect" aria-label="Filtrar por categoria">
           <option value="">Todas as categorias</option>
         </select>
       </div>
@@ -647,8 +640,7 @@
   /* ===================== ELEMENTOS ===================== */
   const grid = document.getElementById("grid");
   const searchInput = document.getElementById("searchInput");
-  const chipsEl = document.getElementById("chips");
-  const mobileCategory = document.getElementById("mobileCategory");
+  const categorySelect = document.getElementById("categorySelect");
   const sortSelect = document.getElementById("sortSelect");
   const statusLine = document.getElementById("statusLine");
   const refreshBtn = document.getElementById("refreshBtn");
@@ -856,10 +848,7 @@
         return "";
       }
       const principalService = getValue(["Serviço da empresa", "Servico da empresa", "Servico", "Serviço"]);
-      let categorias = splitCategories(getValue(["Categorias", "Categoria"]));
-      if (principalService && !categorias.some(category => norm(category) === norm(principalService))) {
-        categorias.unshift(principalService);
-      }
+      const categorias = splitCategories(getValue(["Categorias", "Categoria"]));
       return {
         id: index + 1,
         nome: getValue(["Nome da empresa", "Nome"]),
@@ -892,31 +881,14 @@
 
   function renderCategories() {
     const categories = allCategories();
-    chipsEl.innerHTML = "";
-    mobileCategory.innerHTML = `<option value="">Todas as categorias</option>`;
-
-    const all = document.createElement("button");
-    all.className = "chip" + (!activeCategory ? " active" : "");
-    all.type = "button";
-    all.textContent = "Todos";
-    all.onclick = () => { activeCategory = ""; mobileCategory.value = ""; visibleCount = PAGE_SIZE; renderCategories(); renderGrid(); };
-    chipsEl.appendChild(all);
-
+    categorySelect.innerHTML = `<option value="">Todas as categorias</option>`;
     categories.forEach(category => {
-      const chip = document.createElement("button");
-      chip.type = "button";
-      chip.className = "chip" + (norm(activeCategory) === norm(category) ? " active" : "");
-      chip.textContent = category;
-      chip.onclick = () => { activeCategory = category; mobileCategory.value = category; visibleCount = PAGE_SIZE; renderCategories(); renderGrid(); };
-      chipsEl.appendChild(chip);
-
       const option = document.createElement("option");
       option.value = category;
       option.textContent = category;
-      mobileCategory.appendChild(option);
+      categorySelect.appendChild(option);
     });
-
-    mobileCategory.value = activeCategory;
+    categorySelect.value = activeCategory;
   }
 
   function getFilteredItems() {
@@ -957,6 +929,8 @@
   const mapIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>`;
   const clockIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>`;
   const whatsappIcon = `<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.21h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm5.8 14.16c-.24.68-1.4 1.3-1.93 1.38-.5.08-1.12.11-1.81-.11-.42-.13-.95-.31-1.64-.6-2.88-1.24-4.76-4.14-4.9-4.33-.14-.19-1.17-1.56-1.17-2.97 0-1.41.74-2.1 1-2.39.26-.28.57-.35.76-.35h.55c.18 0 .42-.07.65.5.24.58.81 2 .88 2.14.07.14.12.31.02.5-.09.19-.14.31-.28.47-.14.17-.29.37-.42.5-.14.14-.28.29-.12.56.16.28.72 1.19 1.55 1.93 1.06.95 1.96 1.24 2.24 1.38.28.14.44.12.6-.07.17-.19.7-.81.89-1.09.19-.28.37-.23.62-.14.26.09 1.64.77 1.92.91.28.14.47.21.54.33.07.12.07.68-.17 1.36z"></path></svg>`;
+  const instagramIcon = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>`;
+  const websiteIcon = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>`;
 
   /* ===================== SKELETON ===================== */
   function renderSkeletons() {
@@ -1010,9 +984,13 @@
     const instagram = instagramUrl(item.instagram);
     const website = websiteUrl(item.site);
 
-    let extraButtons = "";
-    if (instagram) extraButtons += `<a class="card-btn" href="${instagram}" target="_blank" rel="noopener">Instagram</a>`;
-    if (website) extraButtons += `<a class="card-btn" href="${website}" target="_blank" rel="noopener">Site</a>`;
+    let socialIcons = "";
+    if (instagram) socialIcons += `<a class="icon-btn" href="${instagram}" target="_blank" rel="noopener" title="Instagram" aria-label="Instagram de ${item.nome}">${instagramIcon}</a>`;
+    if (website) socialIcons += `<a class="icon-btn" href="${website}" target="_blank" rel="noopener" title="Site" aria-label="Site de ${item.nome}">${websiteIcon}</a>`;
+
+    const whatsappBtn = whatsapp ? `<a class="card-btn whatsapp" href="${whatsapp}" target="_blank" rel="noopener">${whatsappIcon} WhatsApp</a>` : "";
+    const couponBtn = `<button class="card-btn coupon" type="button" data-coupon-id="${item.id}">&#127915; Cupom</button>`;
+    const singleAction = !whatsapp; // se não há WhatsApp, o botão de cupom ocupa a linha toda
 
     card.innerHTML = `
       <div class="card-top">
@@ -1021,14 +999,13 @@
           <div class="business-name-line"><h3>${item.nome}</h3>${verified}</div>
           <div class="service-name">${item.servico || "Empreendedor da comunidade"}</div>
         </div>
+        ${socialIcons ? `<div class="social-icons">${socialIcons}</div>` : ""}
       </div>
       ${tags ? `<div class="tags">${tags}</div>` : ""}
       ${description}
       <div class="details">${phone}${address}${schedule}</div>
       <div class="card-actions">
-        ${whatsapp ? `<a class="card-btn whatsapp ${!extraButtons ? "full" : ""}" href="${whatsapp}" target="_blank" rel="noopener">${whatsappIcon} WhatsApp</a>` : ""}
-        ${extraButtons ? `<div class="card-actions-row">${extraButtons}</div>` : ""}
-        <button class="card-btn coupon full" type="button" data-coupon-id="${item.id}">&#127915; Gerar Cupom</button>
+        <div class="card-actions-row${singleAction ? " single" : ""}">${whatsappBtn}${couponBtn}</div>
       </div>`;
 
     card.querySelector("[data-coupon-id]").addEventListener("click", () => openCoupon(item));
@@ -1144,7 +1121,7 @@
   /* ===================== EVENTOS ===================== */
   searchInput.addEventListener("input", () => { visibleCount = PAGE_SIZE; renderGrid(); });
   sortSelect.addEventListener("change", () => { visibleCount = PAGE_SIZE; renderGrid(); });
-  mobileCategory.addEventListener("change", () => { activeCategory = mobileCategory.value; visibleCount = PAGE_SIZE; renderCategories(); renderGrid(); });
+  categorySelect.addEventListener("change", () => { activeCategory = categorySelect.value; visibleCount = PAGE_SIZE; renderGrid(); });
   refreshBtn.addEventListener("click", () => loadFromGoogleSheets(false));
   loadMoreBtn.addEventListener("click", () => { visibleCount += PAGE_SIZE; renderGrid(); });
 
