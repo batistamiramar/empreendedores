@@ -454,6 +454,149 @@
   }
   .map-container .map-placeholder-text span { max-width: 320px; line-height: 1.6; }
   #mapLeaflet { width: 100%; height: 100%; background: transparent; }
+
+  .map-layout {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 18px;
+    align-items: stretch;
+  }
+
+  .map-container {
+    min-width: 0;
+  }
+
+  .map-business-list {
+    background: var(--card);
+    border: 1px solid var(--card-edge);
+    border-radius: 18px;
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 450px;
+  }
+
+  .map-business-list-header {
+    padding: 18px 18px 14px;
+    border-bottom: 1px solid var(--card-edge);
+  }
+
+  .map-business-list-title {
+    font-family: "Fraunces", serif;
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--ink);
+  }
+
+  .map-business-list-count {
+    margin-top: 4px;
+    font-size: 11px;
+    font-family: "JetBrains Mono", monospace;
+    color: var(--ink-faint);
+  }
+
+  .map-business-items {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+  }
+
+  .map-business-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border: 0;
+    border-radius: 12px;
+    background: transparent;
+    color: var(--ink);
+    text-align: left;
+    transition: background 0.15s ease, transform 0.15s ease;
+  }
+
+  .map-business-item:hover,
+  .map-business-item.is-active {
+    background: var(--gold-tint);
+  }
+
+  .map-business-item:active {
+    transform: scale(0.99);
+  }
+
+  .map-business-logo {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    border-radius: 10px;
+    object-fit: cover;
+    background: var(--gold-tint);
+    border: 1px solid var(--gold-border);
+  }
+
+  .map-business-logo.placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Fraunces", serif;
+    font-weight: 700;
+    color: var(--gold-deep);
+  }
+
+  .map-business-content {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .map-business-name {
+    font-weight: 700;
+    font-size: 13px;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .map-business-service {
+    margin-top: 2px;
+    color: var(--ink-soft);
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  .map-business-address {
+    margin-top: 2px;
+    color: var(--ink-faint);
+    font-size: 10.5px;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+
+  .map-business-empty {
+    padding: 28px 18px;
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .leaflet-container {
+    z-index: 1;
+  }
+
+  .leaflet-pane,
+  .leaflet-control,
+  .leaflet-top,
+  .leaflet-bottom {
+    z-index: 1;
+  }
+
   .map-container .leaflet-popup-content-wrapper { border-radius: 12px; }
   .map-container .leaflet-popup-content { font-family: "Inter", sans-serif; margin: 12px 14px; }
   .map-popup-title { font-family: "Fraunces", serif; font-weight: 700; font-size: 14.5px; color: var(--ink); margin-bottom: 2px; }
@@ -470,20 +613,40 @@
   footer .footer-title { font-weight: 700; color: #fff; margin-bottom: 4px; }
 
   /* ============ MODAL ============ */
+  /* Modal fica fora dos stacking contexts do mapa e acima de toda a aplicação. */
   .modal-overlay {
-    position: fixed; inset: 0; z-index: 100;
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
     background: rgba(3,40,64,0.82);
-    display: none; align-items: center; justify-content: center;
+    display: none;
+    align-items: center;
+    justify-content: center;
     padding: 20px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
-  .modal-overlay.open { display: flex; }
+
+  .modal-overlay.open {
+    display: flex;
+  }
+
   .coupon-modal {
+    position: relative;
+    z-index: 2147483001;
     width: min(400px, 100%);
+    max-height: calc(100dvh - 40px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
     background: var(--card);
     border-radius: 20px;
     padding: 32px 28px;
     text-align: center;
-    display: flex; flex-direction: column; align-items: center; gap: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
     box-shadow: 0 30px 80px rgba(0,0,0,0.35);
   }
   .coupon-emoji { font-size: 38px; }
@@ -509,6 +672,76 @@
   .coupon-close-btn:hover { color: var(--ink); }
 
   :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+  @media (max-width: 767px) {
+    .card-actions-row {
+      grid-template-columns: 1fr;
+    }
+
+    .card-btn {
+      width: 100%;
+      min-height: 46px;
+      padding: 11px 14px;
+    }
+
+    .map-layout {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .map-container {
+      height: 350px;
+      min-height: 350px;
+    }
+
+    .map-business-list {
+      min-height: 0;
+      max-height: none;
+    }
+
+    .map-business-items {
+      max-height: 360px;
+    }
+
+    .modal-overlay {
+      padding: 12px;
+      align-items: center;
+    }
+
+    .coupon-modal {
+      width: 100%;
+      max-width: 400px;
+      max-height: calc(100dvh - 24px);
+      padding: 26px 20px;
+      border-radius: 16px;
+    }
+
+    .coupon-code {
+      font-size: 19px;
+      padding: 12px 14px;
+      overflow-wrap: anywhere;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .map-container {
+      height: 320px;
+      min-height: 320px;
+    }
+
+    .coupon-modal {
+      padding: 22px 16px;
+    }
+
+    .coupon-emoji {
+      font-size: 32px;
+    }
+
+    .coupon-discount {
+      font-size: 30px;
+    }
+  }
 
   @media (min-width: 768px) {
     .filter-row {
@@ -554,21 +787,8 @@
       grid-template-columns: 1fr;
     }
 
-    .card-actions-row {
-      grid-template-columns: 1fr;
-    }
-
     .map-container {
-      height: 350px;
-      min-height: 350px;
       border-radius: 14px;
-    }
-  }
-
-  @media (max-width: 420px) {
-    .map-container {
-      height: 320px;
-      min-height: 320px;
     }
   }
 </style>
@@ -682,9 +902,21 @@
     <div class="eyebrow" style="margin-bottom:14px;">Onde est&atilde;o</div>
     <h2 style="margin-bottom:16px;">Empreendedores perto de voc&ecirc;</h2>
   </div>
-  <div id="map-container" class="map-container">
-    <div id="mapLeaflet"></div>
-    <div class="map-placeholder-text" id="mapPlaceholder"><span>Carregando localiza&ccedil;&otilde;es dos empreendedores...</span></div>
+  <div class="map-layout">
+    <div id="map-container" class="map-container">
+      <div id="mapLeaflet"></div>
+      <div class="map-placeholder-text" id="mapPlaceholder">
+        <span>Carregando localiza&ccedil;&otilde;es dos empreendedores...</span>
+      </div>
+    </div>
+
+    <aside class="map-business-list" aria-label="Empreendedores localizados no mapa">
+      <div class="map-business-list-header">
+        <div class="map-business-list-title">Empreendedores no mapa</div>
+        <div class="map-business-list-count" id="mapBusinessListCount">0 localizados</div>
+      </div>
+      <div class="map-business-items" id="mapBusinessItems"></div>
+    </aside>
   </div>
 </section>
 
@@ -693,10 +925,21 @@
   <div>Quadro de Empreendedores &mdash; feito com carinho pela comunidade.</div>
 </footer>
 
-<div class="modal-overlay" id="couponOverlay">
-  <div class="coupon-modal" id="couponModal">
+<div
+  class="modal-overlay"
+  id="couponOverlay"
+  role="presentation"
+  aria-hidden="true"
+>
+  <div
+    class="coupon-modal"
+    id="couponModal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="couponModalTitle"
+  >
     <div class="coupon-emoji">&#127915;</div>
-    <div class="coupon-label">Seu cupom</div>
+    <div class="coupon-label" id="couponModalTitle">Seu cupom</div>
     <div class="coupon-discount" id="couponDiscount"></div>
     <div class="coupon-code" id="couponCode"></div>
     <div class="coupon-biz">Cupom exclusivo para<br><strong id="couponBizName"></strong></div>
@@ -742,6 +985,8 @@
   const couponCopyBtn = document.getElementById("couponCopyBtn");
   const couponCloseBtn = document.getElementById("couponCloseBtn");
   const mapPlaceholder = document.getElementById("mapPlaceholder");
+  const mapBusinessItems = document.getElementById("mapBusinessItems");
+  const mapBusinessListCount = document.getElementById("mapBusinessListCount");
 
   /* ===================== ESTADO ===================== */
   let empreendedores = [];
@@ -753,6 +998,9 @@
   let markersLayer = null;
   let geocodeCache = {};
   let mapUpdateToken = 0;
+  let mapHasInitialViewport = false;
+  const markersById = new Map();
+  const businessesById = new Map();
   try { geocodeCache = JSON.parse(localStorage.getItem(GEOCODE_CACHE_KEY) || "{}"); } catch (error) { geocodeCache = {}; }
 
   if (COORDENACAO_WHATSAPP) {
@@ -813,21 +1061,19 @@
     }
 
     // Google Drive:
-    // https://drive.google.com/file/d/ID/view
-    // https://drive.google.com/open?id=ID
-    // https://drive.google.com/uc?id=ID
-    // https://drive.google.com/uc?export=view&id=ID
+    // /file/d/ID/view
+    // /open?id=ID
+    // /uc?id=ID
+    // /uc?export=view&id=ID
     if (text.includes("drive.google.com")) {
       let fileId = "";
 
-      // /file/d/ID/
       const fileMatch = text.match(/\/file\/d\/([^/]+)/);
 
       if (fileMatch) {
         fileId = fileMatch[1];
       }
 
-      // ?id=ID ou &id=ID
       if (!fileId) {
         const idMatch = text.match(/[?&]id=([^&]+)/);
 
@@ -837,7 +1083,7 @@
       }
 
       if (fileId) {
-        return `https://drive.google.com/thumbnail?id=${encodeURIComponent(fileId)}&sz=w400`;
+        return `https://drive.google.com/thumbnail?id=${encodeURIComponent(fileId)}&sz=w500`;
       }
     }
 
@@ -850,6 +1096,7 @@
     return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
   }
   /* ===================== MAPA (Leaflet + OpenStreetMap) ===================== */
+
   function saveGeocodeCache() {
     try {
       localStorage.setItem(
@@ -857,7 +1104,7 @@
         JSON.stringify(geocodeCache)
       );
     } catch (error) {
-      /* noop */
+      console.warn("Não foi possível salvar o cache de geocoding:", error);
     }
   }
 
@@ -867,27 +1114,108 @@
 
   async function geocodeAddress(address) {
     const key = geocodeKey(address);
-    if (!key) return null;
-    if (Object.prototype.hasOwnProperty.call(geocodeCache, key)) return geocodeCache[key];
+
+    if (!key) {
+      return null;
+    }
+
+    if (Object.prototype.hasOwnProperty.call(geocodeCache, key)) {
+      const cached = geocodeCache[key];
+
+      if (
+        cached &&
+        Number.isFinite(cached.lat) &&
+        Number.isFinite(cached.lon)
+      ) {
+        return cached;
+      }
+
+      // Não mantém falha de geocoding indefinidamente.
+      if (cached === null) {
+        delete geocodeCache[key];
+      }
+    }
 
     try {
       const query = encodeURIComponent(address);
-      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=br&q=${query}`, {
-        headers: { "Accept-Language": "pt-BR" }
-      });
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=br&q=${query}`,
+        {
+          headers: {
+            "Accept-Language": "pt-BR"
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
       const results = await response.json();
-      const coords = results && results[0] ? { lat: parseFloat(results[0].lat), lon: parseFloat(results[0].lon) } : null;
+
+      const coords =
+        results && results[0]
+          ? {
+              lat: parseFloat(results[0].lat),
+              lon: parseFloat(results[0].lon)
+            }
+          : null;
+
       geocodeCache[key] = coords;
       saveGeocodeCache();
+
       return coords;
     } catch (error) {
-      console.warn("Falha ao geocodificar endereço:", address, error);
+      console.warn(
+        "Falha ao geocodificar endereço:",
+        address,
+        error
+      );
+
       return null;
     }
   }
 
+  function getCachedBusinessCoords(item) {
+    const cached = geocodeCache[item.id];
+
+    if (
+      cached &&
+      cached.address === item.endereco &&
+      Number.isFinite(cached.lat) &&
+      Number.isFinite(cached.lon)
+    ) {
+      return {
+        lat: cached.lat,
+        lon: cached.lon
+      };
+    }
+
+    return null;
+  }
+
+  function saveBusinessGeocode(item, coords) {
+    geocodeCache[item.id] = {
+      address: item.endereco,
+      lat: coords.lat,
+      lon: coords.lon,
+      updatedAt: Date.now()
+    };
+
+    saveGeocodeCache();
+  }
+
+  function removeBusinessGeocode(item) {
+    if (item && item.id && geocodeCache[item.id]) {
+      delete geocodeCache[item.id];
+      saveGeocodeCache();
+    }
+  }
+
   function ensureMap() {
-    if (leafletMap || typeof L === "undefined") return;
+    if (leafletMap || typeof L === "undefined") {
+      return;
+    }
 
     leafletMap = L.map("mapLeaflet", {
       scrollWheelZoom: false,
@@ -895,18 +1223,30 @@
       zoomControl: true
     });
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      maxZoom: 19
-    }).addTo(leafletMap);
+    L.tileLayer(
+      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      {
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 19
+      }
+    ).addTo(leafletMap);
 
     markersLayer = L.layerGroup().addTo(leafletMap);
+
     leafletMap.setView([-7.115, -34.86], 12);
 
-    // O Leaflet pode inicializar antes do container terminar de receber
-    // seu tamanho responsivo. Recalculamos o viewport após o layout.
-    setTimeout(() => leafletMap && leafletMap.invalidateSize(), 100);
-    setTimeout(() => leafletMap && leafletMap.invalidateSize(), 500);
+    setTimeout(() => {
+      if (leafletMap) {
+        leafletMap.invalidateSize();
+      }
+    }, 100);
+
+    setTimeout(() => {
+      if (leafletMap) {
+        leafletMap.invalidateSize();
+      }
+    }, 500);
   }
 
   function escapeHtml(value) {
@@ -918,116 +1258,406 @@
       .replace(/'/g, "&#039;");
   }
 
-  async function updateMapMarkers() {
+  function getMapPopupHtml(item) {
+    const map = mapsUrl(item);
+
+    return `
+      <div class="map-popup-title">${escapeHtml(item.nome)}</div>
+      <div class="map-popup-service">
+        ${escapeHtml(
+          item.servico || "Empreendedor da comunidade"
+        )}
+      </div>
+      <div style="font-size:12px;color:rgba(5,53,85,0.62);line-height:1.45;margin-bottom:8px;">
+        ${escapeHtml(item.endereco)}
+      </div>
+      ${
+        map
+          ? `<a class="map-popup-link"
+                href="${map}"
+                target="_blank"
+                rel="noopener">
+                Ver rotas &rarr;
+             </a>`
+          : ""
+      }
+    `;
+  }
+
+  function setMarkerVisible(marker, visible) {
+    if (!marker) {
+      return;
+    }
+
+    marker.setOpacity(visible ? 1 : 0);
+
+    if (marker._icon) {
+      marker._icon.style.pointerEvents = visible
+        ? "auto"
+        : "none";
+    }
+
+    if (marker._shadow) {
+      marker._shadow.style.pointerEvents = visible
+        ? "auto"
+        : "none";
+    }
+  }
+
+  function highlightMapBusiness(id, scrollIntoView = true) {
+    document
+      .querySelectorAll(".map-business-item.is-active")
+      .forEach(element => element.classList.remove("is-active"));
+
+    const item = document.querySelector(
+      `.map-business-item[data-business-id="${CSS.escape(id)}"]`
+    );
+
+    if (item) {
+      item.classList.add("is-active");
+
+      if (scrollIntoView) {
+        item.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest"
+        });
+      }
+    }
+  }
+
+  function centerOnBusiness(item, openPopup = true) {
+    const markerData = markersById.get(item.id);
+
+    if (!markerData || !markerData.marker || !leafletMap) {
+      return;
+    }
+
+    const marker = markerData.marker;
+    const latLng = marker.getLatLng();
+
+    leafletMap.setView(latLng, Math.max(leafletMap.getZoom(), 15), {
+      animate: true
+    });
+
+    if (openPopup) {
+      marker.openPopup();
+    }
+
+    highlightMapBusiness(item.id);
+  }
+
+  function renderMapBusinessList(items) {
+    if (!mapBusinessItems || !mapBusinessListCount) {
+      return;
+    }
+
+    const locatedItems = items.filter(
+      item => markersById.has(item.id)
+    );
+
+    mapBusinessListCount.textContent =
+      locatedItems.length === 1
+        ? "1 localizado"
+        : `${locatedItems.length} localizados`;
+
+    mapBusinessItems.innerHTML = "";
+
+    if (!locatedItems.length) {
+      const empty = document.createElement("div");
+      empty.className = "map-business-empty";
+      empty.textContent =
+        items.length
+          ? "Os endereços dos resultados ainda estão sendo localizados."
+          : "Nenhum empreendedor encontrado com os filtros atuais.";
+      mapBusinessItems.appendChild(empty);
+      return;
+    }
+
+    locatedItems.forEach(item => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "map-business-item";
+      button.dataset.businessId = item.id;
+      button.setAttribute(
+        "aria-label",
+        `Ver ${item.nome} no mapa`
+      );
+
+      const resolvedLogo = logoUrl(item.logo);
+
+      const logoHtml = resolvedLogo
+        ? `
+          <img
+            class="map-business-logo"
+            src="${resolvedLogo}"
+            alt=""
+            loading="lazy"
+            referrerpolicy="no-referrer"
+            onerror="
+              this.style.display='none';
+              this.nextElementSibling.style.display='flex';
+            "
+          >
+          <div
+            class="map-business-logo placeholder"
+            style="display:none;"
+            aria-hidden="true"
+          >
+            ${escapeHtml(getInitials(item.nome))}
+          </div>
+        `
+        : `
+          <div
+            class="map-business-logo placeholder"
+            aria-hidden="true"
+          >
+            ${escapeHtml(getInitials(item.nome))}
+          </div>
+        `;
+
+      button.innerHTML = `
+        ${logoHtml}
+        <div class="map-business-content">
+          <div class="map-business-name">
+            ${escapeHtml(item.nome)}
+          </div>
+          <div class="map-business-service">
+            ${escapeHtml(
+              item.servico || "Empreendedor da comunidade"
+            )}
+          </div>
+          <div class="map-business-address">
+            ${escapeHtml(item.endereco)}
+          </div>
+        </div>
+      `;
+
+      button.addEventListener("click", () => {
+        centerOnBusiness(item, true);
+      });
+
+      mapBusinessItems.appendChild(button);
+    });
+  }
+
+  function createOrUpdateMarker(item, coords) {
+    if (!leafletMap || !markersLayer) {
+      return null;
+    }
+
+    const existing = markersById.get(item.id);
+
+    if (existing) {
+      existing.marker.setLatLng([coords.lat, coords.lon]);
+      existing.marker.setPopupContent(getMapPopupHtml(item));
+      existing.item = item;
+      return existing.marker;
+    }
+
+    const marker = L.marker([coords.lat, coords.lon]);
+
+    marker.businessId = item.id;
+
+    marker
+      .addTo(markersLayer)
+      .bindPopup(getMapPopupHtml(item));
+
+    marker.on("click", () => {
+      highlightMapBusiness(item.id);
+    });
+
+    markersById.set(item.id, {
+      marker,
+      item,
+      address: item.endereco
+    });
+
+    return marker;
+  }
+
+  async function syncMapMarkers(items, options = {}) {
+    const {
+      fitInitialViewport = false
+    } = options;
+
     const updateToken = ++mapUpdateToken;
-    const withAddress = empreendedores.filter(item => item.endereco);
 
     ensureMap();
 
-    if (!withAddress.length) {
-      if (leafletMap) {
-        markersLayer.clearLayers();
-        leafletMap.setView([-7.115, -34.86], 12);
-        leafletMap.invalidateSize();
+    if (!leafletMap || !markersLayer) {
+      if (mapPlaceholder) {
+        mapPlaceholder.querySelector("span").textContent =
+          "Não foi possível carregar o mapa.";
+        mapPlaceholder.style.display = "flex";
       }
+      return;
+    }
 
+    leafletMap.invalidateSize();
+
+    const currentIds = new Set(
+      empreendedores
+        .filter(item => item.endereco)
+        .map(item => item.id)
+    );
+
+    // Remove somente marcadores de empresas que realmente saíram da planilha.
+    for (const [id, markerData] of markersById.entries()) {
+      if (!currentIds.has(id)) {
+        markerData.marker.remove();
+        markersById.delete(id);
+      }
+    }
+
+    // Empresas que existem na planilha, mas não fazem parte dos filtros atuais,
+    // continuam em memória e no mapa, apenas ficam invisíveis.
+    for (const [id, markerData] of markersById.entries()) {
+      setMarkerVisible(
+        markerData.marker,
+        items.some(item => item.id === id)
+      );
+    }
+
+    if (!empreendedores.some(item => item.endereco)) {
       mapPlaceholder.querySelector("span").textContent =
         "Nenhum endereço cadastrado ainda para exibir no mapa.";
       mapPlaceholder.style.display = "flex";
+      renderMapBusinessList(items);
       return;
     }
-
-    if (!leafletMap || !markersLayer) {
-      mapPlaceholder.querySelector("span").textContent =
-        "Não foi possível carregar o mapa.";
-      mapPlaceholder.style.display = "flex";
-      return;
-    }
-
-    // Garante que o Leaflet conheça o tamanho atual do container,
-    // especialmente importante no mobile.
-    leafletMap.invalidateSize();
-
-    markersLayer.clearLayers();
-
-    const points = [];
-    let locatedCount = 0;
 
     mapPlaceholder.querySelector("span").textContent =
       "Localizando os endereços dos empreendedores...";
     mapPlaceholder.style.display = "flex";
 
-    for (const item of withAddress) {
-      const key = geocodeKey(item.endereco);
-      const isCached = Object.prototype.hasOwnProperty.call(geocodeCache, key);
-      const coords = await geocodeAddress(item.endereco);
+    const points = [];
 
-      if (updateToken !== mapUpdateToken) return;
+    for (const item of items) {
+      if (!item.endereco) {
+        continue;
+      }
 
-      if (!isCached) {
+      // Apenas resultados visíveis precisam ser geocodificados.
+      // Marcadores de outros resultados continuam preservados em memória,
+      // mas permanecem invisíveis.
+      const isVisibleInFilter = true;
+
+      let coords = getCachedBusinessCoords(item);
+
+      if (!coords) {
+        // Compatibilidade com o cache antigo baseado no endereço.
+        const legacyKey = geocodeKey(item.endereco);
+        const legacyCoords = geocodeCache[legacyKey];
+
+        if (
+          legacyCoords &&
+          Number.isFinite(legacyCoords.lat) &&
+          Number.isFinite(legacyCoords.lon)
+        ) {
+          coords = legacyCoords;
+          saveBusinessGeocode(item, coords);
+        }
+      }
+
+      if (!coords) {
+        coords = await geocodeAddress(item.endereco);
+
+        if (updateToken !== mapUpdateToken) {
+          return;
+        }
+
+        if (coords) {
+          saveBusinessGeocode(item, coords);
+        }
+
+        // Só respeitamos o intervalo do Nominatim quando houve uma requisição.
         await new Promise(resolve =>
           setTimeout(resolve, NOMINATIM_DELAY_MS)
         );
       }
 
-      if (!coords ||
-          !Number.isFinite(coords.lat) ||
-          !Number.isFinite(coords.lon)) {
+      if (!coords) {
+        const existing = markersById.get(item.id);
+
+        if (existing) {
+          existing.marker.remove();
+          markersById.delete(item.id);
+        }
+
         continue;
       }
 
-      locatedCount++;
-      points.push([coords.lat, coords.lon]);
+      const marker = createOrUpdateMarker(item, coords);
 
-      const map = mapsUrl(item);
-
-      const popupHtml = `
-        <div class="map-popup-title">${escapeHtml(item.nome)}</div>
-        <div class="map-popup-service">
-          ${escapeHtml(item.servico || "Empreendedor da comunidade")}
-        </div>
-        <div style="font-size:12px;color:rgba(5,53,85,0.62);line-height:1.45;margin-bottom:8px;">
-          ${escapeHtml(item.endereco)}
-        </div>
-        ${
-          map
-            ? `<a class="map-popup-link" href="${map}" target="_blank" rel="noopener">
-                 Ver rotas &rarr;
-               </a>`
-            : ""
-        }
-      `;
-
-      L.marker([coords.lat, coords.lon])
-        .addTo(markersLayer)
-        .bindPopup(popupHtml);
-    }
-
-    if (points.length) {
-      mapPlaceholder.style.display = "none";
-
-      if (points.length === 1) {
-        leafletMap.setView(points[0], 15);
-      } else {
-        leafletMap.fitBounds(points, {
-          padding: [40, 40],
-          maxZoom: 16
-        });
+      if (!marker) {
+        continue;
       }
 
-      // Recalcula depois de renderizar os pins.
-      setTimeout(() => leafletMap && leafletMap.invalidateSize(), 100);
-      setTimeout(() => leafletMap && leafletMap.invalidateSize(), 500);
+      setMarkerVisible(marker, isVisibleInFilter);
 
-      statusLine.dataset.mapLocated = locatedCount;
+      if (isVisibleInFilter) {
+        points.push([coords.lat, coords.lon]);
+      }
+    }
+
+    if (updateToken !== mapUpdateToken) {
+      return;
+    }
+
+    renderMapBusinessList(items);
+
+    const visibleLocatedCount = items.filter(
+      item => markersById.has(item.id)
+    ).length;
+
+    if (visibleLocatedCount > 0) {
+      mapPlaceholder.style.display = "none";
+
+      // fitBounds apenas na primeira carga. Atualizações e filtros preservam
+      // o viewport que o usuário já escolheu.
+      if (!mapHasInitialViewport && fitInitialViewport && points.length) {
+        if (points.length === 1) {
+          leafletMap.setView(points[0], 15);
+        } else {
+          leafletMap.fitBounds(points, {
+            padding: [40, 40],
+            maxZoom: 16
+          });
+        }
+
+        mapHasInitialViewport = true;
+      }
+
+      setTimeout(() => {
+        if (leafletMap) {
+          leafletMap.invalidateSize();
+        }
+      }, 100);
+
+      setTimeout(() => {
+        if (leafletMap) {
+          leafletMap.invalidateSize();
+        }
+      }, 500);
+
+      statusLine.dataset.mapLocated = visibleLocatedCount;
     } else {
       mapPlaceholder.querySelector("span").textContent =
-        "Não conseguimos localizar os endereços cadastrados no mapa. Verifique se os endereços estão completos.";
+        items.length
+          ? "Não conseguimos localizar os endereços dos resultados atuais."
+          : "Nenhum empreendedor encontrado com os filtros atuais.";
       mapPlaceholder.style.display = "flex";
-      leafletMap.setView([-7.115, -34.86], 12);
-      leafletMap.invalidateSize();
     }
   }
+
+  // Compatibilidade: o nome antigo continua disponível para qualquer chamada
+  // externa do projeto, mas agora usa sincronização incremental.
+  async function updateMapMarkers() {
+    return syncMapMarkers(getFilteredItems(), {
+      fitInitialViewport: !mapHasInitialViewport
+    });
+  }
+
 
   function randCode(name) {
     const letters = norm(name).toUpperCase().replace(/[^A-Z]/g, "");
@@ -1049,42 +1679,144 @@
       if (!stored) return false;
       const parsed = JSON.parse(stored);
       if (!parsed || !Array.isArray(parsed.data) || parsed.data.length === 0) return false;
-      empreendedores = parsed.data;
+      empreendedores = parsed.data.map(item => {
+        const normalized = {
+          ...item,
+          id: stableBusinessId(item, item.id)
+        };
+
+        return normalized;
+      });
+
       lastSuccessfulUpdate = parsed.timestamp || null;
       return true;
     } catch (error) { return false; }
   }
 
+
+  /* ===================== ID ESTÁVEL ===================== */
+  // Gera um identificador determinístico. Assim o ID não depende da posição da
+  // linha na planilha e permanece igual quando a ordem das linhas muda.
+  function stableHash(value) {
+    let hash = 2166136261;
+
+    for (let i = 0; i < value.length; i++) {
+      hash ^= value.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+
+    return (hash >>> 0).toString(16).padStart(8, "0");
+  }
+
+  function stableBusinessId(item, explicitId = "") {
+    const suppliedId = safeText(explicitId);
+
+    // IDs antigos do projeto eram números baseados no índice da linha.
+    // Eles não devem ser tratados como IDs persistentes.
+    const looksLikeLegacyIndexId =
+      /^\d+$/.test(suppliedId);
+
+    if (suppliedId && !looksLikeLegacyIndexId) {
+      return suppliedId.startsWith("emp_")
+        ? suppliedId
+        : `emp_${stableHash(norm(suppliedId))}`;
+    }
+
+    // Chave baseada em dados que tendem a ser estáveis.
+    // Telefone/WhatsApp e endereço têm prioridade; nome/serviço completam a chave.
+    const identityParts = [
+      item.whatsapp || item.telefone,
+      item.endereco,
+      item.nome,
+      item.servico
+    ].map(norm);
+
+    return `emp_${stableHash(identityParts.join("|"))}`;
+  }
+
   /* ===================== PLANILHA ===================== */
   function parseRowsFromSheet(rows) {
-    return rows.map((row, index) => {
-      function getValue(keys) {
-        for (const key of keys) {
-          const column = Object.keys(row).find(current => norm(current) === norm(key));
-          if (column && row[column] !== undefined && row[column] !== null) return safeText(row[column]);
+    return rows
+      .map(row => {
+        function getValue(keys) {
+          for (const key of keys) {
+            const column = Object.keys(row).find(
+              current => norm(current) === norm(key)
+            );
+
+            if (
+              column &&
+              row[column] !== undefined &&
+              row[column] !== null
+            ) {
+              return safeText(row[column]);
+            }
+          }
+
+          return "";
         }
-        return "";
-      }
-      const principalService = getValue(["Serviço da empresa", "Servico da empresa", "Servico", "Serviço"]);
-      const categorias = splitCategories(getValue(["Categorias", "Categoria"]));
-      return {
-        id: index + 1,
-        nome: getValue(["Nome da empresa", "Nome"]),
-        servico: principalService,
-        categorias: categorias,
-        telefone: getValue(["Telefone"]),
-        whatsapp: getValue(["Whatsapp", "WhatsApp"]),
-        endereco: getValue(["Endereco", "Endereço"]),
-        descricao: getValue(["Descricao", "Descrição"]),
-        instagram: getValue(["Instagram"]),
-        site: getValue(["Site", "Website"]),
-        horario: getValue(["Horário de funcionamento", "Horario de funcionamento", "Horario", "Horário", "Horario de atendimento", "Horário de atendimento"]),
-        logo: getValue(["Logo marca", "Logo", "Imagem", "Foto"]),
-        mapa: getValue(["Localização (Link)", "Localizacao (Link)", "Mapa", "Google Maps"]),
-        verificado: isTruthy(getValue(["Verificado"])),
-        dataCadastro: getValue(["Carimbo de data/hora", "Data", "Data Cadastro", "Data de Cadastro"]),
-      };
-    }).filter(item => item.nome && item.verificado);
+
+        const principalService = getValue([
+          "Serviço da empresa",
+          "Servico da empresa",
+          "Servico",
+          "Serviço"
+        ]);
+
+        const categorias = splitCategories(
+          getValue(["Categorias", "Categoria"])
+        );
+
+        const item = {
+          id: "",
+          nome: getValue(["Nome da empresa", "Nome"]),
+          servico: principalService,
+          categorias,
+          telefone: getValue(["Telefone"]),
+          whatsapp: getValue(["Whatsapp", "WhatsApp"]),
+          endereco: getValue(["Endereco", "Endereço"]),
+          descricao: getValue(["Descricao", "Descrição"]),
+          instagram: getValue(["Instagram"]),
+          site: getValue(["Site", "Website"]),
+          horario: getValue([
+            "Horário de funcionamento",
+            "Horario de funcionamento",
+            "Horario",
+            "Horário",
+            "Horario de atendimento",
+            "Horário de atendimento"
+          ]),
+          logo: getValue(["Logo marca", "Logo", "Imagem", "Foto"]),
+          mapa: getValue([
+            "Localização (Link)",
+            "Localizacao (Link)",
+            "Mapa",
+            "Google Maps"
+          ]),
+          verificado: isTruthy(getValue(["Verificado"])),
+          dataCadastro: getValue([
+            "Carimbo de data/hora",
+            "Data",
+            "Data Cadastro",
+            "Data de Cadastro"
+          ])
+        };
+
+        const explicitId = getValue([
+          "ID",
+          "Id",
+          "ID Empresa",
+          "Id Empresa",
+          "Identificador",
+          "Código",
+          "Codigo"
+        ]);
+
+        item.id = stableBusinessId(item, explicitId);
+
+        return item;
+      })
+      .filter(item => item.nome && item.verificado);
   }
 
   /* ===================== FILTROS / ORDENAÇÃO ===================== */
@@ -1133,7 +1865,9 @@
         result.sort((a, b) => {
           const dateA = Date.parse(a.dataCadastro) || 0;
           const dateB = Date.parse(b.dataCadastro) || 0;
-          return dateA === dateB ? b.id - a.id : dateB - dateA;
+          return dateA === dateB
+            ? b.id.localeCompare(a.id)
+            : dateB - dateA;
         });
         break;
       default:
@@ -1180,17 +1914,38 @@
     const resolvedLogo = logoUrl(item.logo);
     if (resolvedLogo) {
       logoHTML = `
-        <img class="business-logo" src="${resolvedLogo}" alt="Logo de ${item.nome}" loading="lazy"
-             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        <img
+          class="business-logo"
+          src="${resolvedLogo}"
+          alt="Logo de ${item.nome}"
+          loading="lazy"
+          referrerpolicy="no-referrer"
+          onerror="
+            this.style.display='none';
+            this.nextElementSibling.style.display='flex';
+          "
+        >
         <div class="business-logo placeholder" style="display:none;">${getInitials(item.nome)}</div>`;
     } else {
       logoHTML = `<div class="business-logo placeholder">${getInitials(item.nome)}</div>`;
     }
 
     const verified = item.verificado ? `<span class="verified" title="Cadastro verificado pela igreja">&#10003; Verificado</span>` : "";
-    const tags = (item.categorias || []).slice(0, 4).map(category => `<span class="tag">${category}</span>`).join("");
-    const description = item.descricao ? `<p class="description">${item.descricao}</p>` : "";
-    const phone = item.telefone ? `<div class="info-row phone">${phoneIcon}<span>${item.telefone}</span></div>` : "";
+    const tags = (item.categorias || [])
+      .slice(0, 4)
+      .map(
+        category =>
+          `<span class="tag">${escapeHtml(category)}</span>`
+      )
+      .join("");
+
+    const description = item.descricao
+      ? `<p class="description">${escapeHtml(item.descricao)}</p>`
+      : "";
+
+    const phone = item.telefone
+      ? `<div class="info-row phone">${phoneIcon}<span>${escapeHtml(item.telefone)}</span></div>`
+      : "";
 
     const map = mapsUrl(item);
     const address = item.endereco
@@ -1203,19 +1958,24 @@
     const website = websiteUrl(item.site);
 
     let socialIcons = "";
-    if (instagram) socialIcons += `<a class="icon-btn" href="${instagram}" target="_blank" rel="noopener" title="Instagram" aria-label="Instagram de ${item.nome}">${instagramIcon}</a>`;
-    if (website) socialIcons += `<a class="icon-btn" href="${website}" target="_blank" rel="noopener" title="Site" aria-label="Site de ${item.nome}">${websiteIcon}</a>`;
+    if (instagram) socialIcons += `<a class="icon-btn" href="${instagram}" target="_blank" rel="noopener" title="Instagram" aria-label="Instagram de ${escapeHtml(item.nome)}">${instagramIcon}</a>`;
+    if (website) socialIcons += `<a class="icon-btn" href="${website}" target="_blank" rel="noopener" title="Site" aria-label="Site de ${escapeHtml(item.nome)}">${websiteIcon}</a>`;
 
     const whatsappBtn = whatsapp ? `<a class="card-btn whatsapp" href="${whatsapp}" target="_blank" rel="noopener">${whatsappIcon} WhatsApp</a>` : "";
-    const couponBtn = `<button class="card-btn coupon" type="button" data-coupon-id="${item.id}">&#127915; Cupom</button>`;
+    const couponBtn = `<button class="card-btn coupon" type="button" data-coupon-id="${escapeHtml(item.id)}">&#127915; Cupom</button>`;
     const singleAction = !whatsapp; // se não há WhatsApp, o botão de cupom ocupa a linha toda
 
     card.innerHTML = `
       <div class="card-top">
         ${logoHTML}
         <div class="business-heading">
-          <div class="business-name-line"><h3>${item.nome}</h3>${verified}</div>
-          <div class="service-name">${item.servico || "Empreendedor da comunidade"}</div>
+          <div class="business-name-line">
+            <h3>${escapeHtml(item.nome)}</h3>
+            ${verified}
+          </div>
+          <div class="service-name">
+            ${escapeHtml(item.servico || "Empreendedor da comunidade")}
+          </div>
         </div>
         ${socialIcons ? `<div class="social-icons">${socialIcons}</div>` : ""}
       </div>
@@ -1226,31 +1986,144 @@
         <div class="card-actions-row${singleAction ? " single" : ""}">${whatsappBtn}${couponBtn}</div>
       </div>`;
 
-    card.querySelector("[data-coupon-id]").addEventListener("click", () => openCoupon(item));
+    card
+      .querySelector("[data-coupon-id]")
+      .addEventListener("click", event => {
+        openCoupon(item, event.currentTarget);
+      });
     return card;
   }
 
   /* ===================== CUPOM ===================== */
-  function openCoupon(item) {
-    const discount = DISCOUNTS[Math.floor(Math.random() * DISCOUNTS.length)];
-    currentCoupon = { name: item.nome, code: randCode(item.nome), discount };
-    couponDiscount.textContent = `${currentCoupon.discount}% OFF`;
+  let couponTriggerElement = null;
+  let bodyScrollPosition = 0;
+
+  // O overlay é movido para o body para escapar de qualquer stacking context
+  // criado por header, cards, mapa ou outros ancestrais.
+  if (couponOverlay.parentElement !== document.body) {
+    document.body.appendChild(couponOverlay);
+  }
+
+  function lockBodyScroll() {
+    bodyScrollPosition = window.scrollY;
+
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${bodyScrollPosition}px`;
+    document.body.style.left = "0";
+    document.body.style.right = "0";
+    document.body.style.width = "100%";
+    document.body.style.overflow = "hidden";
+  }
+
+  function unlockBodyScroll() {
+    document.body.style.position = "";
+    document.body.style.top = "";
+    document.body.style.left = "";
+    document.body.style.right = "";
+    document.body.style.width = "";
+    document.body.style.overflow = "";
+
+    window.scrollTo(0, bodyScrollPosition);
+  }
+
+  function openCoupon(item, triggerElement = null) {
+    const discount =
+      DISCOUNTS[Math.floor(Math.random() * DISCOUNTS.length)];
+
+    currentCoupon = {
+      name: item.nome,
+      code: randCode(item.nome),
+      discount
+    };
+
+    couponTriggerElement =
+      triggerElement ||
+      document.querySelector(
+        `[data-coupon-id="${CSS.escape(item.id)}"]`
+      );
+
+    couponDiscount.textContent =
+      `${currentCoupon.discount}% OFF`;
+
     couponCode.textContent = currentCoupon.code;
     couponBizName.textContent = currentCoupon.name;
     couponCopyBtn.textContent = "Copiar cupom";
+
+    lockBodyScroll();
     couponOverlay.classList.add("open");
+    couponOverlay.setAttribute("aria-hidden", "false");
+
+    requestAnimationFrame(() => {
+      couponCloseBtn.focus();
+    });
   }
-  function closeCoupon() { couponOverlay.classList.remove("open"); currentCoupon = null; }
-  couponOverlay.addEventListener("click", event => { if (event.target === couponOverlay) closeCoupon(); });
-  couponModal.addEventListener("click", event => event.stopPropagation());
+
+  function closeCoupon() {
+    if (!couponOverlay.classList.contains("open")) {
+      return;
+    }
+
+    couponOverlay.classList.remove("open");
+    couponOverlay.setAttribute("aria-hidden", "true");
+    currentCoupon = null;
+    unlockBodyScroll();
+
+    if (
+      couponTriggerElement &&
+      document.contains(couponTriggerElement)
+    ) {
+      couponTriggerElement.focus();
+    }
+
+    couponTriggerElement = null;
+  }
+
+  couponOverlay.addEventListener("click", event => {
+    if (event.target === couponOverlay) {
+      closeCoupon();
+    }
+  });
+
+  couponModal.addEventListener("click", event => {
+    event.stopPropagation();
+  });
+
   couponCloseBtn.addEventListener("click", closeCoupon);
+
   couponCopyBtn.addEventListener("click", () => {
     const code = currentCoupon?.code || "";
-    const done = () => { couponCopyBtn.textContent = "✓ Cupom copiado!"; setTimeout(() => { couponCopyBtn.textContent = "Copiar cupom"; }, 2000); };
-    if (navigator.clipboard) navigator.clipboard.writeText(code).then(done).catch(done);
-    else done();
+
+    const done = () => {
+      couponCopyBtn.textContent = "✓ Cupom copiado!";
+
+      setTimeout(() => {
+        if (currentCoupon) {
+          couponCopyBtn.textContent = "Copiar cupom";
+        }
+      }, 2000);
+    };
+
+    if (
+      navigator.clipboard &&
+      window.isSecureContext
+    ) {
+      navigator.clipboard
+        .writeText(code)
+        .then(done)
+        .catch(done);
+    } else {
+      done();
+    }
   });
-  document.addEventListener("keydown", event => { if (event.key === "Escape") closeCoupon(); });
+
+  document.addEventListener("keydown", event => {
+    if (
+      event.key === "Escape" &&
+      couponOverlay.classList.contains("open")
+    ) {
+      closeCoupon();
+    }
+  });
 
   /* ===================== RENDERIZAÇÃO ===================== */
   function renderGrid() {
@@ -1280,6 +2153,12 @@
       updatedText = ` • ${"atualizado " + (isToday ? "hoje" : "em " + date.toLocaleDateString("pt-BR"))} às ${date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`;
     }
     statusLine.textContent = `${filtered.length} ${term}${updatedText}`;
+
+    // Os filtros dos cards também controlam a visibilidade dos marcadores
+    // e o conteúdo da lista lateral/inferior do mapa.
+    syncMapMarkers(filtered, {
+      fitInitialViewport: !mapHasInitialViewport
+    });
   }
 
   /* ===================== GOOGLE SHEETS ===================== */
@@ -1303,16 +2182,40 @@
       complete: results => {
         const parsed = parseRowsFromSheet(results.data);
         if (!parsed.length) { handleSheetError("A planilha foi carregada, mas não encontramos cadastros válidos."); return; }
+        const previousById = new Map(
+          empreendedores.map(item => [item.id, item])
+        );
+
         empreendedores = parsed;
+
+        // Atualiza o índice central por ID estável.
+        businessesById.clear();
+        empreendedores.forEach(item => {
+          businessesById.set(item.id, item);
+        });
+
         lastSuccessfulUpdate = Date.now();
         saveCache();
 
         const categories = allCategories();
-        if (activeCategory && !categories.some(category => norm(category) === norm(activeCategory))) activeCategory = "";
+
+        if (
+          activeCategory &&
+          !categories.some(
+            category => norm(category) === norm(activeCategory)
+          )
+        ) {
+          activeCategory = "";
+        }
 
         renderCategories();
         renderGrid();
-        updateMapMarkers();
+
+        // renderGrid já sincroniza o mapa incrementalmente.
+        // Mantemos previousById disponível para futuras comparações sem
+        // destruir os marcadores existentes.
+        void previousById;
+
         finishRefreshButton();
       },
       error: error => { console.error(error); handleSheetError("Não conseguimos conectar com a planilha. Verifique se ela está compartilhada como \"Qualquer pessoa com o link\"."); }
@@ -1358,8 +2261,19 @@
 
   /* ===================== INICIALIZAÇÃO ===================== */
   const cacheLoaded = loadCache();
-  if (cacheLoaded) { renderCategories(); renderGrid(); updateMapMarkers(); }
-  else { renderSkeletons(); }
+
+  if (cacheLoaded) {
+    businessesById.clear();
+
+    empreendedores.forEach(item => {
+      businessesById.set(item.id, item);
+    });
+
+    renderCategories();
+    renderGrid();
+  } else {
+    renderSkeletons();
+  }
 
   loadFromGoogleSheets(!cacheLoaded);
 
