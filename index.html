@@ -531,16 +531,19 @@
 
   .map-business-item {
     width: 100%;
+    min-width: 0;
+    max-width: 100%;
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 12px;
+    padding: 10px;
     border: 1px solid var(--card-edge);
     border-radius: 12px;
     background: var(--neutral-100);
     color: var(--ink);
     text-align: left;
     transition: 0.15s ease;
+    overflow: hidden;
   }
 
   .map-business-item:hover,
@@ -570,7 +573,9 @@
 
   .map-business-info {
     min-width: 0;
-    flex: 1;
+    width: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
   }
 
   .map-business-name {
@@ -608,26 +613,81 @@
       grid-template-columns: 1fr;
       max-height: 450px;
       overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .map-business-item {
+      min-width: 0;
     }
   }
 
   @media (max-width: 767px) {
     .map-layout {
-      grid-template-columns: 1fr;
-      gap: 16px;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 14px;
+      align-items: start;
+      width: 100%;
+      min-width: 0;
+    }
+
+    .map-container {
+      width: 100%;
+      height: min(62vh, 420px);
+      min-height: 300px;
     }
 
     .map-business-list-wrap {
+      width: 100%;
+      min-width: 0;
+      height: auto;
+      max-height: none;
       margin: 0;
+      align-self: start;
+    }
+
+    .map-business-list-header {
+      padding: 14px 16px;
+      gap: 10px;
+    }
+
+    .map-business-list-header h3 {
+      font-size: 18px;
+      line-height: 1.15;
     }
 
     .map-business-list {
-      grid-template-columns: 1fr;
-      max-height: none;
+      width: 100%;
+      min-width: 0;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 8px;
+      padding: 10px;
+      max-height: 300px;
+      overflow-x: hidden;
+      overflow-y: auto;
     }
 
     .map-business-item {
-      min-height: 68px;
+      min-height: 58px;
+      width: 100%;
+      min-width: 0;
+      padding: 8px;
+      gap: 9px;
+    }
+
+    .map-business-logo {
+      width: 38px;
+      height: 38px;
+      flex: 0 0 38px;
+      border-radius: 9px;
+    }
+
+    .map-business-name {
+      font-size: 14px;
+    }
+
+    .map-business-service,
+    .map-business-address {
+      font-size: 11px;
     }
   }
 
