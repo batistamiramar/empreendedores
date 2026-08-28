@@ -445,13 +445,28 @@
     position: relative;
   }
   .map-container .map-placeholder-text {
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    text-align: center; padding: 24px;
-    color: var(--ink-soft); font-size: 13px;
+    position: absolute;
+    inset: 0;
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+    color: var(--ink-soft);
+    font-size: 13px;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
   }
   .map-container .map-placeholder-text span { max-width: 320px; line-height: 1.6; }
-  #mapLeaflet { width: 100%; height: 100%; background: transparent; }
+  #mapLeaflet {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    position: relative;
+    z-index: 1;
+    touch-action: pan-x pan-y;
+  }
   .map-container .leaflet-popup-content-wrapper { border-radius: 12px; }
   .map-container .leaflet-popup-content { font-family: "Inter", sans-serif; margin: 12px 14px; }
   .map-popup-title { font-family: "Fraunces", serif; font-weight: 700; font-size: 14.5px; color: var(--ink); margin-bottom: 2px; }
@@ -747,6 +762,17 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
         Atualizar
       </button>
+
+      <a
+        class="outline-btn"
+        id="registerBusinessBtn"
+        href="https://docs.google.com/forms/d/e/1FAIpQLSd1yrOmhfdBMprGtsKHNnHeGhLa8LguiyWvPgK4_nXz5WscDQ/viewform?usp=header"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Cadastrar meu negócio"
+      >
+        + Cadastrar meu negócio
+      </a>
     </div>
   </div>
   <svg class="header-curve" viewBox="0 0 1440 80" preserveAspectRatio="none"><path d="M0,80 C360,0 1080,0 1440,80 L1440,80 L0,80 Z" fill="var(--cream)"></path></svg>
@@ -831,7 +857,15 @@
       </div>
     </div>
     <!-- TODO: assim que houver um número de WhatsApp da coordenação, defina COORDENACAO_WHATSAPP no script abaixo para ativar este link. -->
-    <a href="#" id="coordinationBtn" class="howto-cta">Falar com a coordena&ccedil;&atilde;o</a>
+    <a
+      href="https://docs.google.com/forms/d/e/1FAIpQLSd1yrOmhfdBMprGtsKHNnHeGhLa8LguiyWvPgK4_nXz5WscDQ/viewform?usp=header"
+      id="coordinationBtn"
+      class="howto-cta"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Cadastrar meu neg&oacute;cio
+    </a>
   </div>
 </section>
 
@@ -935,11 +969,8 @@
   let mapHasInitializedViewport = false;
   try { geocodeCache = JSON.parse(localStorage.getItem(GEOCODE_CACHE_KEY) || "{}"); } catch (error) { geocodeCache = {}; }
 
-  if (COORDENACAO_WHATSAPP) {
-    coordinationBtn.href = `https://wa.me/${COORDENACAO_WHATSAPP}?text=${encodeURIComponent("Olá! Gostaria de cadastrar meu negócio no Quadro de Empreendedores.")}`;
-    coordinationBtn.target = "_blank";
-    coordinationBtn.rel = "noopener";
-  }
+  // O botão de cadastro usa diretamente o Google Forms.
+  // COORDENACAO_WHATSAPP permanece disponível para futuras necessidades.
 
   /* ===================== UTILITÁRIOS ===================== */
   function norm(value) {
@@ -1123,8 +1154,12 @@
     }
 
     leafletMap = L.map("mapLeaflet", {
-      scrollWheelZoom: false,
-      tap: true,
+      scrollWheelZoom: true,
+      dragging: true,
+      touchZoom: true,
+      doubleClickZoom: true,
+      boxZoom: true,
+      keyboard: true,
       zoomControl: true
     });
 
@@ -1360,23 +1395,38 @@
     ensureMap();
 
     if (!leafletMap || !markersLayer) {
-      if (mapPlaceholder) {
-        mapPlaceholder.querySelector("span").textContent =
-          "Não foi possível carregar o mapa.";
-        mapPlaceholder.style.display = "flex";
-      }
+      mapPlaceholder.querySelector("span").textContent =
+        "Não foi possível carregar o mapa.";
+      mapPlaceholder.style.display = "flex";
+      return;
+    }
+
+    // O mapa usa exclusivamente os registros recebidos da planilha
+    // que possuem a coluna "Endereço" preenchida.
+    const withAddress = items.filter(item => safeText(item.endereco));
+
+    leafletMap.invalidateSize();
+
+    if (!withAddress.length) {
+      markersLayer.clearLayers();
+      markersById.clear();
+      businessesById.clear();
+
+      mapPlaceholder.querySelector("span").textContent =
+        "Nenhum endereço cadastrado ainda para exibir no mapa.";
+      mapPlaceholder.style.display = "flex";
 
       return;
     }
 
-    const currentIds = new Set(
-      items
-        .filter(item => item.endereco)
-        .map(item => item.id)
-    );
+    mapPlaceholder.querySelector("span").textContent =
+      "Localizando os endereços dos empreendedores...";
+    mapPlaceholder.style.display = "flex";
 
-    // Remove somente empresas que não existem mais na planilha.
-    for (const [id, marker] of markersById) {
+    const currentIds = new Set(withAddress.map(item => item.id));
+
+    // Remove somente marcadores de empresas que não existem mais.
+    for (const [id, marker] of markersById.entries()) {
       if (!currentIds.has(id)) {
         markersLayer.removeLayer(marker);
         markersById.delete(id);
@@ -1384,35 +1434,31 @@
       }
     }
 
-    const locatedItems = [];
+    const points = [];
+    let locatedCount = 0;
 
-    for (const item of items) {
-      if (!item.endereco) {
-        continue;
+    for (const item of withAddress) {
+      if (updateToken !== mapUpdateToken) {
+        return;
       }
 
-      const previousBusiness = businessesById.get(item.id);
+      const previous = businessesById.get(item.id);
       businessesById.set(item.id, item);
 
-      const cachedKey = geocodeKey(item.endereco);
-      const hadCache = Object.prototype.hasOwnProperty.call(
-        geocodeCache,
-        cachedKey
-      );
+      const addressKey = geocodeKey(item.endereco);
+      const previousAddressKey = previous
+        ? geocodeKey(previous.endereco)
+        : "";
 
       let coords = null;
 
-      // Se já existe marcador e o endereço não mudou,
-      // preserva o marcador sem nova consulta.
-      const existingMarker = markersById.get(item.id);
-
+      // Reutiliza o cache quando o endereço não mudou.
       if (
-        existingMarker &&
-        previousBusiness &&
-        geocodeKey(previousBusiness.endereco) === cachedKey &&
-        geocodeCache[cachedKey]
+        previous &&
+        previousAddressKey === addressKey &&
+        geocodeCache[addressKey]
       ) {
-        coords = geocodeCache[cachedKey];
+        coords = geocodeCache[addressKey];
       } else {
         coords = await geocodeAddress(item.endereco);
 
@@ -1420,7 +1466,8 @@
           return;
         }
 
-        if (!hadCache) {
+        // Respeita o limite do Nominatim somente quando houve consulta nova.
+        if (!geocodeCache[addressKey]) {
           await new Promise(resolve =>
             setTimeout(resolve, NOMINATIM_DELAY_MS)
           );
@@ -1432,66 +1479,95 @@
         !Number.isFinite(coords.lat) ||
         !Number.isFinite(coords.lon)
       ) {
+        console.warn(
+          `[Mapa] Não foi possível localizar "${item.nome}". Endereço:`,
+          item.endereco
+        );
         continue;
       }
 
-      const marker = markersById.get(item.id);
+      let marker = markersById.get(item.id);
+
+      const popupHtml = `
+        <div class="map-popup-title">
+          ${escapeHtml(item.nome)}
+        </div>
+
+        <div class="map-popup-service">
+          ${escapeHtml(
+            item.servico || "Empreendedor da comunidade"
+          )}
+        </div>
+
+        <div style="
+          font-size:12px;
+          color:rgba(5,53,85,0.62);
+          line-height:1.45;
+          margin-bottom:8px;
+        ">
+          ${escapeHtml(item.endereco)}
+        </div>
+
+        ${
+          mapsUrl(item)
+            ? `
+              <a
+                class="map-popup-link"
+                href="${mapsUrl(item)}"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Ver rotas &rarr;
+              </a>
+            `
+            : ""
+        }
+      `;
 
       if (!marker) {
-        createMapMarker(item, coords);
+        marker = L.marker([coords.lat, coords.lon], {
+          keyboard: true,
+          title: item.nome,
+          alt: `Localização de ${item.nome}`
+        });
+
+        marker.businessId = item.id;
+        marker.addTo(markersLayer);
+
+        marker.on("click", () => {
+          highlightMapBusiness(item.id);
+        });
+
+        markersById.set(item.id, marker);
       } else {
-        const currentPosition = marker.getLatLng();
-
-        if (
-          currentPosition.lat !== coords.lat ||
-          currentPosition.lng !== coords.lon
-        ) {
-          marker.setLatLng([coords.lat, coords.lon]);
-        }
-
-        updateMarkerPopup(item);
+        marker.setLatLng([coords.lat, coords.lon]);
       }
 
-      locatedItems.push(item);
+      marker.setPopupContent(popupHtml);
+      points.push([coords.lat, coords.lon]);
+      locatedCount++;
     }
 
-    renderMapBusinessList(
-      getFilteredItems()
-    );
-
-    if (!locatedItems.length) {
-      mapPlaceholder.querySelector("span").textContent =
-        items.length
-          ? "Não conseguimos localizar os endereços cadastrados. Verifique a coluna Endereço da planilha."
-          : "Nenhum empreendedor cadastrado com endereço.";
-
-      mapPlaceholder.style.display = "flex";
-      leafletMap.invalidateSize();
-
+    if (updateToken !== mapUpdateToken) {
       return;
     }
 
+    if (!locatedCount) {
+      mapPlaceholder.querySelector("span").textContent =
+        "Não conseguimos localizar os endereços. Confira se a coluna Endereço contém rua, número, bairro, cidade e estado.";
+      mapPlaceholder.style.display = "flex";
+      leafletMap.invalidateSize();
+      return;
+    }
+
+    // Esconde somente a mensagem; o Leaflet continua totalmente interativo.
     mapPlaceholder.style.display = "none";
 
-    // Só enquadra os pins na primeira carga.
+    // Enquadra os empreendedores na primeira carga.
     if (!mapHasInitializedViewport) {
-      const points = locatedItems
-        .map(item => {
-          const marker = markersById.get(item.id);
-
-          if (!marker) {
-            return null;
-          }
-
-          const position = marker.getLatLng();
-
-          return [position.lat, position.lng];
-        })
-        .filter(Boolean);
-
       if (points.length === 1) {
         leafletMap.setView(points[0], 15);
-      } else if (points.length > 1) {
+      } else {
         leafletMap.fitBounds(points, {
           padding: [40, 40],
           maxZoom: 16
@@ -1499,6 +1575,12 @@
       }
 
       mapHasInitializedViewport = true;
+    }
+
+    statusLine.dataset.mapLocated = String(locatedCount);
+
+    if (typeof renderMapBusinessList === "function") {
+      renderMapBusinessList(getFilteredItems());
     }
 
     setTimeout(() => {
@@ -1509,13 +1591,10 @@
   }
 
   function updateMapFromFilters() {
-    renderMapBusinessList(getFilteredItems());
+    const filteredItems = getFilteredItems();
+    const visibleIds = new Set(filteredItems.map(item => item.id));
 
-    const visibleIds = new Set(
-      getFilteredItems().map(item => item.id)
-    );
-
-    for (const [id, marker] of markersById) {
+    for (const [id, marker] of markersById.entries()) {
       if (visibleIds.has(id)) {
         if (!markersLayer.hasLayer(marker)) {
           markersLayer.addLayer(marker);
@@ -1523,6 +1602,10 @@
       } else {
         markersLayer.removeLayer(marker);
       }
+    }
+
+    if (typeof renderMapBusinessList === "function") {
+      renderMapBusinessList(filteredItems);
     }
   }
 
