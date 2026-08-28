@@ -436,8 +436,6 @@
 
   .map-section { background: var(--neutral-100); }
   .map-container {
-    max-width: 1200px;
-    margin: 0 auto;
     width: 100%;
     height: 450px;
     border-radius: 18px;
@@ -458,14 +456,23 @@
   .map-container .leaflet-popup-content { font-family: "Inter", sans-serif; margin: 12px 14px; }
   .map-popup-title { font-family: "Fraunces", serif; font-weight: 700; font-size: 14.5px; color: var(--ink); margin-bottom: 2px; }
   .map-popup-service { font-size: 12px; color: var(--ink-soft); margin-bottom: 8px; }
-  .map-business-list-wrap {
+  .map-layout {
     max-width: 1200px;
     margin: 20px auto 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+    gap: 20px;
+    align-items: stretch;
+  }
+
+  .map-business-list-wrap {
+    margin: 0;
     background: var(--card);
     border: 1px solid var(--card-edge);
     border-radius: 18px;
     box-shadow: var(--shadow-sm);
     overflow: hidden;
+    min-width: 0;
   }
 
   .map-business-list-header {
@@ -581,20 +588,27 @@
     font-size: 13px;
   }
 
-  @media (min-width: 1100px) {
-    .map-business-list-wrap {
-      display: grid;
-      grid-template-columns: 1fr;
-    }
-
+  @media (min-width: 768px) {
     .map-business-list {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: 1fr;
+      max-height: 450px;
+      overflow-y: auto;
     }
   }
 
   @media (max-width: 767px) {
+    .map-layout {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .map-business-list-wrap {
+      margin: 0;
+    }
+
     .map-business-list {
       grid-template-columns: 1fr;
+      max-height: none;
     }
 
     .map-business-item {
@@ -826,12 +840,15 @@
     <div class="eyebrow" style="margin-bottom:14px;">Onde est&atilde;o</div>
     <h2 style="margin-bottom:16px;">Empreendedores perto de voc&ecirc;</h2>
   </div>
-  <div id="map-container" class="map-container">
-    <div id="mapLeaflet"></div>
-    <div class="map-placeholder-text" id="mapPlaceholder"><span>Carregando localiza&ccedil;&otilde;es dos empreendedores...</span></div>
-  </div>
+  <div class="map-layout">
+    <div id="map-container" class="map-container">
+      <div id="mapLeaflet"></div>
+      <div class="map-placeholder-text" id="mapPlaceholder">
+        <span>Carregando localiza&ccedil;&otilde;es dos empreendedores...</span>
+      </div>
+    </div>
 
-  <div class="map-business-list-wrap" id="mapBusinessListWrap">
+    <div class="map-business-list-wrap" id="mapBusinessListWrap">
     <div class="map-business-list-header">
       <div>
         <div class="eyebrow">Localizados no mapa</div>
@@ -839,7 +856,8 @@
       </div>
       <span class="map-business-count" id="mapBusinessCount">0</span>
     </div>
-    <div class="map-business-list" id="mapBusinessList"></div>
+      <div class="map-business-list" id="mapBusinessList"></div>
+    </div>
   </div>
 </section>
 
