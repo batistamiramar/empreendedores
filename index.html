@@ -1053,13 +1053,9 @@
     return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
   }
 
-  /* ===================== LOCALIZAÇÕES PERSISTENTES ===================== */
-
   function loadMapLocations() {
     try {
-      const raw = localStorage.getItem(
-        MAP_LOCATIONS_CACHE_KEY
-      );
+      const raw = localStorage.getItem(MAP_LOCATIONS_CACHE_KEY);
 
       if (!raw) {
         return [];
@@ -1079,11 +1075,7 @@
         Number.isFinite(Number(item.longitude))
       );
     } catch (error) {
-      console.warn(
-        "[Mapa] Cache de localizações inválido:",
-        error
-      );
-
+      console.warn("[Mapa] Cache de localizações inválido:", error);
       return [];
     }
   }
@@ -1095,46 +1087,8 @@
         JSON.stringify(localizacoes)
       );
     } catch (error) {
-      console.warn(
-        "[Mapa] Não foi possível salvar localizações:",
-        error
-      );
+      console.warn("[Mapa] Não foi possível salvar localizações:", error);
     }
-  }
-
-  function upsertMapLocation(item, coords) {
-    if (!validCoordinates(coords)) {
-      return;
-    }
-
-    const existingIndex = localizacoes.findIndex(
-      location => location.id === item.id
-    );
-
-    const location = {
-      id: item.id,
-      empresa: item.nome,
-      endereco: item.endereco || "",
-      latitude: Number(coords.lat),
-      longitude: Number(coords.lon),
-      fonte: coords.source || "nominatim",
-      atualizadoEm: Date.now()
-    };
-
-    if (existingIndex === -1) {
-      localizacoes.push(location);
-    } else {
-      localizacoes[existingIndex] = {
-        ...localizacoes[existingIndex],
-        ...location
-      };
-    }
-  }
-
-  function removeInactiveMapLocations(activeIds) {
-    localizacoes = localizacoes.filter(
-      location => activeIds.has(location.id)
-    );
   }
 
   function getMapLocation(id) {
@@ -1143,12 +1097,10 @@
     ) || null;
   }
 
+
   function createMarkerFromLocation(location, item) {
     const marker = L.marker(
-      [
-        location.latitude,
-        location.longitude
-      ],
+      [location.latitude, location.longitude],
       {
         title: item.nome,
         alt: `Localização de ${item.nome}`,
@@ -1158,45 +1110,43 @@
 
     const mapUrl = mapsUrl(item);
 
-    marker
-      .bindPopup(`
-        <div class="map-popup-title">
-          ${escapeHtml(item.nome)}
-        </div>
+    marker.bindPopup(`
+      <div class="map-popup-title">
+        ${escapeHtml(item.nome)}
+      </div>
 
-        <div class="map-popup-service">
-          ${escapeHtml(
-            item.servico || "Empreendedor da comunidade"
-          )}
-        </div>
+      <div class="map-popup-service">
+        ${escapeHtml(
+          item.servico || "Empreendedor da comunidade"
+        )}
+      </div>
 
-        <div style="
-          font-size:12px;
-          color:rgba(5,53,85,0.62);
-          line-height:1.45;
-          margin-bottom:8px;
-        ">
-          ${escapeHtml(
-            item.endereco || "Localização cadastrada"
-          )}
-        </div>
+      <div style="
+        font-size:12px;
+        color:rgba(5,53,85,0.62);
+        line-height:1.45;
+        margin-bottom:8px;
+      ">
+        ${escapeHtml(
+          item.endereco || "Localização cadastrada"
+        )}
+      </div>
 
-        ${
-          mapUrl
-            ? `
-              <a
-                class="map-popup-link"
-                href="${mapUrl}"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Ver rotas &rarr;
-              </a>
-            `
-            : ""
-        }
-      `)
-      .addTo(markersLayer);
+      ${
+        mapUrl
+          ? `
+            <a
+              class="map-popup-link"
+              href="${mapUrl}"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Ver rotas &rarr;
+            </a>
+          `
+          : ""
+      }
+    `);
 
     marker.businessId = item.id;
 
@@ -1204,6 +1154,7 @@
       highlightMapBusiness(item.id);
     });
 
+    marker.addTo(markersLayer);
     markersById.set(item.id, marker);
 
     return marker;
@@ -1379,61 +1330,29 @@
     return validCoordinates(coords) ? coords : null;
   }
 
-  async function geocodeAddress(address, mapsLink = "") {
-    const addressKey = geocodeKey(address);
-
-    // 1. Usa coordenadas explícitas no link do Google Maps, quando existirem.
-    const googleCoords = extractCoordinatesFromGoogleMaps(mapsLink);
-
-    if (googleCoords) {
-      geocodeCache[addressKey] = googleCoords;
-      saveGeocodeCache();
-      return googleCoords;
-    }
-
-    // 2. Usa o cache somente quando ele contém coordenadas válidas.
-    if (
-      Object.prototype.hasOwnProperty.call(
-        geocodeCache,
-        addressKey
-      ) &&
-      validCoordinates(geocodeCache[addressKey])
-    ) {
-      return geocodeCache[addressKey];
-    }
-
-    const variants = normalizeAddressVariants(address);
-
-    if (!variants.length) {
-      return null;
-    }
-
-    // 3. Tenta várias versões do endereço.
-    for (const queryText of variants) {
-      try {
-        const coords = await nominatimSearch(queryText);
-
-        if (coords) {
-          geocodeCache[addressKey] = coords;
-          saveGeocodeCache();
-          return coords;
-        }
-      } catch (error) {
-        console.warn(
-          "[Mapa] Falha na consulta de geocodificação:",
-          queryText,
-          error
-        );
-      }
-
-      await new Promise(resolve =>
-        setTimeout(resolve, NOMINATIM_DELAY_MS)
-      );
-    }
-
-    console.warn(
-      `[Mapa] Endereço não encontrado após várias tentativas: ${address}`
+  async function geocodeAddress(address, mapsLink = "", latitude = "", longitude = "") {
+    const lat = Number.parseFloat(
+      String(latitude).replace(",", ".").trim()
     );
+
+    const lon = Number.parseFloat(
+      String(longitude).replace(",", ".").trim()
+    );
+
+    if (
+      Number.isFinite(lat) &&
+      Number.isFinite(lon) &&
+      lat >= -90 &&
+      lat <= 90 &&
+      lon >= -180 &&
+      lon <= 180
+    ) {
+      return {
+        lat,
+        lon,
+        source: "spreadsheet"
+      };
+    }
 
     return null;
   }
@@ -1693,123 +1612,78 @@
 
     leafletMap.invalidateSize();
 
-    const activeItems = items.filter(item =>
-      safeText(item.endereco) || safeText(item.mapa)
+    // A planilha agora é a única fonte de coordenadas.
+    const mapItems = items.filter(item =>
+      validCoordinates({
+        lat: Number.parseFloat(
+          String(item.latitude).replace(",", ".")
+        ),
+        lon: Number.parseFloat(
+          String(item.longitude).replace(",", ".")
+        )
+      })
     );
-
-    const activeIds = new Set(
-      activeItems.map(item => item.id)
-    );
-
-    // Remove do cache empresas que não existem mais na planilha.
-    removeInactiveMapLocations(activeIds);
-    saveMapLocations();
 
     markersLayer.clearLayers();
     markersById.clear();
+    businessesById.clear();
 
-    // Primeiro desenha imediatamente tudo que já foi geocodificado.
-    let points = [];
+    // O array localizacoes é reconstruído a partir da planilha.
+    // Ele é salvo para a próxima sessão.
+    localizacoes = [];
 
-    for (const item of activeItems) {
-      const cachedLocation = getMapLocation(item.id);
-
-      if (!cachedLocation) {
-        continue;
-      }
-
-      const marker = createMarkerFromLocation(
-        cachedLocation,
-        item
-      );
-
-      points.push([
-        cachedLocation.latitude,
-        cachedLocation.longitude
-      ]);
-    }
-
-    // Se já temos coordenadas salvas, o mapa não precisa esperar API.
-    if (points.length) {
-      mapPlaceholder.style.display = "none";
-
-      if (!mapHasInitializedViewport) {
-        if (points.length === 1) {
-          leafletMap.setView(points[0], 15);
-        } else {
-          leafletMap.fitBounds(points, {
-            padding: [40, 40],
-            maxZoom: 16
-          });
-        }
-
-        mapHasInitializedViewport = true;
-      }
-    }
-
-    // Agora procura somente empresas que ainda não possuem localização.
-    const pendingItems = activeItems.filter(
-      item => !getMapLocation(item.id)
-    );
-
-    if (!pendingItems.length) {
-      if (!points.length) {
-        mapPlaceholder.querySelector("span").textContent =
-          "Nenhuma localização cadastrada ainda.";
-        mapPlaceholder.style.display = "flex";
-      }
+    if (!mapItems.length) {
+      mapPlaceholder.querySelector("span").textContent =
+        "Nenhuma empresa possui Lat e Lon válidos na planilha.";
+      mapPlaceholder.style.display = "flex";
+      statusLine.dataset.mapLocated = "0";
 
       if (typeof renderMapBusinessList === "function") {
-        renderMapBusinessList(getFilteredItems());
+        renderMapBusinessList([]);
       }
 
       return;
     }
 
-    mapPlaceholder.querySelector("span").textContent =
-      points.length
-        ? "Atualizando novas localizações..."
-        : "Localizando os endereços dos empreendedores...";
+    const points = [];
 
-    mapPlaceholder.style.display =
-      points.length ? "none" : "flex";
-
-    // Geocodifica somente novos/alterados registros.
-    for (const item of pendingItems) {
+    for (const item of mapItems) {
       if (updateToken !== mapUpdateToken) {
         return;
       }
 
       const coords = await geocodeAddress(
         item.endereco,
-        item.mapa
+        item.mapa,
+        item.latitude,
+        item.longitude
       );
-
-      if (updateToken !== mapUpdateToken) {
-        return;
-      }
 
       if (!coords) {
         console.warn(
-          `[Mapa] Não foi possível localizar "${item.nome}".`,
+          `[Mapa] Coordenadas inválidas para "${item.nome}".`,
           {
             id: item.id,
-            endereco: item.endereco,
-            localizacao: item.mapa
+            latitude: item.latitude,
+            longitude: item.longitude
           }
         );
-
         continue;
       }
 
-      upsertMapLocation(item, coords);
-      saveMapLocations();
+      businessesById.set(item.id, item);
 
-      const location = getMapLocation(item.id);
+      const location = {
+        id: item.id,
+        empresa: item.nome,
+        endereco: item.endereco || "",
+        latitude: coords.lat,
+        longitude: coords.lon,
+        fonte: "spreadsheet",
+        atualizadoEm: Date.now()
+      };
 
-      if (!location) {
-        continue;
-      }
+      localizacoes.push(location);
 
       createMarkerFromLocation(
         location,
@@ -1817,32 +1691,39 @@
       );
 
       points.push([
-        location.latitude,
-        location.longitude
+        coords.lat,
+        coords.lon
       ]);
-
-      if (!mapHasInitializedViewport) {
-        if (points.length === 1) {
-          leafletMap.setView(points[0], 15);
-        } else {
-          leafletMap.fitBounds(points, {
-            padding: [40, 40],
-            maxZoom: 16
-          });
-        }
-      }
     }
 
-    if (points.length) {
-      mapPlaceholder.style.display = "none";
-      mapHasInitializedViewport = true;
-      statusLine.dataset.mapLocated = String(points.length);
-    } else {
+    saveMapLocations();
+
+    if (!points.length) {
       mapPlaceholder.querySelector("span").textContent =
-        "Não foi possível localizar nenhuma empresa. Verifique a coluna Endereço.";
+        "As empresas foram carregadas, mas nenhuma possui Lat e Lon válidos.";
       mapPlaceholder.style.display = "flex";
       statusLine.dataset.mapLocated = "0";
+
+      if (typeof renderMapBusinessList === "function") {
+        renderMapBusinessList([]);
+      }
+
+      return;
     }
+
+    mapPlaceholder.style.display = "none";
+    statusLine.dataset.mapLocated = String(points.length);
+
+    if (points.length === 1) {
+      leafletMap.setView(points[0], 15);
+    } else {
+      leafletMap.fitBounds(points, {
+        padding: [40, 40],
+        maxZoom: 16
+      });
+    }
+
+    mapHasInitializedViewport = true;
 
     if (typeof renderMapBusinessList === "function") {
       renderMapBusinessList(getFilteredItems());
@@ -1959,6 +1840,8 @@
         horario: getValue(["Horário de funcionamento", "Horario de funcionamento", "Horario", "Horário", "Horario de atendimento", "Horário de atendimento"]),
         logo: getValue(["Logo marca", "Logo", "Imagem", "Foto"]),
         mapa: getValue(["Localização (Link)", "Localizacao (Link)", "Mapa", "Google Maps"]),
+        latitude: getValue(["Lat", "Latitude", "LAT", "lat"]),
+        longitude: getValue(["Lon", "Longitude", "LON", "lon", "Lng", "Long"]),
         verificado: isTruthy(getValue(["Verificado"])),
         dataCadastro: getValue(["Carimbo de data/hora", "Data", "Data Cadastro", "Data de Cadastro"]),
       };
