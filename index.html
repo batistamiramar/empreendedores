@@ -627,6 +627,9 @@
 </div>
 
 <script>
+  /* ===================== CONFIGURAÇÃO ===================== */
+  // Link "Publicar na Web" (Arquivo > Compartilhar > Publicar na Web > CSV) — NÃO usar o link de "Exportar",
+  // pois ele não permite leitura via JavaScript de outro site (bloqueio de CORS).
   const SHEET_CSV_URL =
     "https://docs.google.com/spreadsheets/d/e/2PACX-1vSKirY9N49HM1O8sxMZ64h6gmDOcxd7Wgo1qvi2qXx9m9fziSXPDnYuzBxFxmig7-wJ22-jRmQo5SnE/pub?gid=169548160&single=true&output=csv";
 
@@ -712,6 +715,17 @@
     if (item.mapa && item.mapa.startsWith("http")) return item.mapa;
     if (!item.endereco) return "";
     return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(item.endereco);
+  }
+  function logoUrl(value) {
+    const text = safeText(value);
+    if (!text || !text.startsWith("http")) return "";
+    // Links do Google Drive (ex: .../open?id=XXX ou .../file/d/XXX/view) não são exibíveis
+    // diretamente como <img>; convertemos para o formato de visualização direta do Drive.
+    const driveMatch = text.match(/[-\w]{25,}/); // extrai o ID do arquivo do Drive
+    if (text.includes("drive.google.com") && driveMatch) {
+      return `https://drive.google.com/uc?export=view&id=${driveMatch[0]}`;
+    }
+    return text;
   }
   function whatsappUrl(item) {
     const phone = normalizePhone(item.whatsapp || item.telefone);
@@ -841,14 +855,14 @@
         }
         return "";
       }
-      const principalService = getValue(["Servico", "Serviço"]);
+      const principalService = getValue(["Serviço da empresa", "Servico da empresa", "Servico", "Serviço"]);
       let categorias = splitCategories(getValue(["Categorias", "Categoria"]));
       if (principalService && !categorias.some(category => norm(category) === norm(principalService))) {
         categorias.unshift(principalService);
       }
       return {
         id: index + 1,
-        nome: getValue(["Nome"]),
+        nome: getValue(["Nome da empresa", "Nome"]),
         servico: principalService,
         categorias: categorias,
         telefone: getValue(["Telefone"]),
@@ -857,9 +871,9 @@
         descricao: getValue(["Descricao", "Descrição"]),
         instagram: getValue(["Instagram"]),
         site: getValue(["Site", "Website"]),
-        horario: getValue(["Horario", "Horário", "Horario de atendimento", "Horário de atendimento"]),
-        logo: getValue(["Logo", "Imagem", "Foto"]),
-        mapa: getValue(["Mapa", "Google Maps"]),
+        horario: getValue(["Horário de funcionamento", "Horario de funcionamento", "Horario", "Horário", "Horario de atendimento", "Horário de atendimento"]),
+        logo: getValue(["Logo marca", "Logo", "Imagem", "Foto"]),
+        mapa: getValue(["Localização (Link)", "Localizacao (Link)", "Mapa", "Google Maps"]),
         verificado: isTruthy(getValue(["Verificado"])),
         dataCadastro: getValue(["Carimbo de data/hora", "Data", "Data Cadastro", "Data de Cadastro"]),
       };
@@ -971,9 +985,10 @@
     card.className = "card";
 
     let logoHTML;
-    if (item.logo && item.logo.startsWith("http")) {
+    const resolvedLogo = logoUrl(item.logo);
+    if (resolvedLogo) {
       logoHTML = `
-        <img class="business-logo" src="${item.logo}" alt="Logo de ${item.nome}" loading="lazy"
+        <img class="business-logo" src="${resolvedLogo}" alt="Logo de ${item.nome}" loading="lazy"
              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
         <div class="business-logo placeholder" style="display:none;">${getInitials(item.nome)}</div>`;
     } else {
